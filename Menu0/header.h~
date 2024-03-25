@@ -1,0 +1,32 @@
+#ifndef FONCTIONS_H_
+#define FONCTIONS_H_
+#include <stdlib.h>
+//#include </usr/include/SDL.h>
+#include <stdio.h>
+#include <SDL/SDL_image.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_mixer.h>
+#include <stdbool.h>
+
+typedef struct {	
+	SDL_Rect pos1;
+	SDL_Rect pos2;
+	SDL_Surface * img;
+}image;
+
+typedef struct {	
+	Mix_Music *music;
+}musique
+
+
+void initBiblio(image *IMG);
+void afficherIMG(image *IMG);
+void JouerMusic(musique* Piste);
+void Liberation();
+
+
+
+
+
+
+#endif

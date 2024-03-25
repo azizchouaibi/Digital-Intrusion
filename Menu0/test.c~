@@ -1,0 +1,20 @@
+int compt=0;
+bool musup;
+bool musdown;
+
+Button* slider(Button etatS) {
+int i;
+	Button tabs;
+	tabs=malloc(4*sizeof(Button));
+	for (i=0; i <4; i++) {
+		tabs[i].img[0]=NULL;
+	}
+	
+	tabs[0].img[0]=IMG_Load("/home/aziz/Desktop/Travail/ts_opt/1.png");
+	tabs[1].img[0]=IMG_Load("/home/aziz/Desktop/Travail/ts_opt/2.png");
+	tabs[2].img[0]=IMG_Load("/home/aziz/Desktop/Travail/ts_opt/3.png");
+	tabs[3].img[0]=IMG_Load("/home/aziz/Desktop/Travail/ts_opt/4.png");
+	
+return tabs;
+}
+	

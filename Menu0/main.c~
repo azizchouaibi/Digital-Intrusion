@@ -1,0 +1,27 @@
+#include "header.h"
+
+int main() {	
+ printf("MAIN FONCTIONNE\n");
+ 
+return 0;
+}
+}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
