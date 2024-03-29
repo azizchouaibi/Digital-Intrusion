@@ -1,0 +1,149 @@
+void loadoptions(SDL_Surface *ecran, SDL_Event event, SDL_Surface * backg, SDL_Rect posopt) {
+	
+	int i,compt;
+	compt =1;
+	int son=0;
+	Button btn[8];
+	for (i=0; i<8;i++) {
+		btn[i].img[0]=NULL;
+		btn[i].img[1]=NULL;
+	}
+	
+
+	if ( backg==NULL) {
+		printf("ERROR LOADING OPTIONS BACKGROUND \n"); 
+	} else {
+		posopt.x=0;
+		posopt.y=0;
+		posopt.w=backg->w;
+		posopt.h=backg->h;
+		SDL_BlitSurface(backg,NULL,ecran,&posopt);
+		btn[0].img[1]=IMG_Load("/home/aziz/Desktop/Travail/ts_opt/off.png");
+			if (btn[0].img[1]==NULL) {
+				printf("ERREUR 1");
+			} else {
+				printf("SUCCES ");
+			}
+			
+		btn[1].img[1]=IMG_Load("/home/aziz/Desktop/Travail/ts_opt/off_o.png");
+			if ( btn[1].img[1] ==NULL) {
+				printf("ERROR 2");
+			}else {
+				printf("SUCCES ");
+			}
+		btn[4].img[1]=IMG_Load("/home/aziz/Desktop/Travail/ts_opt/full1.png");
+			if ( btn[4].img[1]==NULL) {
+				printf("ERROR 3");
+			}else {
+				printf("SUCCES ");
+			}
+		btn[6].img[0]=IMG_Load("/home/aziz/Desktop/Travail/ts_opt/4.png");
+			if ( btn[6].img[0]==NULL) {
+				printf("ERROR 5");
+			}else {
+				printf("SUCCES ");
+			}
+		btn[5].img[1]=IMG_Load("/home/aziz/Desktop/Travail/ts_opt/win1.png");
+			if ( btn[5].img[1]==NULL) {
+				printf("ERROR 4");
+			}else {
+				printf("SUCCES ");
+			}
+			
+		// initialisation des positions des boutons : 
+			
+			
+		
+		btn[0].pos.x=1118; // MUSIC OFF/ on
+		btn[0].pos.y=416;
+		btn[0].pos.w=btn[0].img[1]->w;
+		btn[0].pos.h=btn[0].img[1]->h;
+			
+		btn[1].pos.x=1118; // SFX OFF OU ON
+		btn[1].pos.y=987;
+		btn[1].pos.w=btn[1].img[1]->w;
+		btn[1].pos.h=btn[1].img[1]->h;
+		
+		btn[2].pos.x=1335; // Flech droite mta3 el sout
+		btn[2].pos.y=713;
+		btn[2].pos.w=80;
+		btn[2].pos.h=80;	
+		
+		btn[3].pos.x=591;
+		btn[3].pos.y=713; // fleche gauche mta3 el sout
+		btn[3].pos.w=80;
+		btn[3].pos.h=80;
+		
+		
+		btn[4].pos.x=492; // button fullscreen
+		btn[4].pos.y=834;
+		btn[4].pos.w=btn[4].img[1]->w;
+		btn[4].pos.h=btn[4].img[1]->h;
+		
+		btn[5].pos.x=1129; // button windowed
+		btn[5].pos.y=834;
+		btn[5].pos.w=btn[5].img[1]->w;
+		btn[5].pos.h=btn[5].img[1]->h;
+		
+		
+		if  (sourisSurbtn(btn[4].pos,event)) {
+			SDL_BlitSurface(btn[4].img[1],NULL,ecran,&btn[4].pos);
+		}
+		
+		if (sourisSurbtn(btn[5].pos,event)) {
+			SDL_BlitSurface(btn[5].img[1],NULL,ecran,&btn[5].pos);
+		}
+		
+		btn[6].pos.x=621; // el slider mt3 el sout
+		btn[6].pos.y=718;
+		btn[6].pos.w=btn[6].img[0]->w;
+		btn[6].pos.h=btn[6].img[0]->h;
+			// TEST SUR CLICK : 
+       	 		if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+				if ( sourisSurbtn(btn[0].pos,event)) {
+					SDL_BlitSurface(btn[0].img[1],NULL,ecran,&btn[0].pos);
+					
+					
+					} else if ( sourisSurbtn(btn[1].pos,event)) {
+						SDL_BlitSurface(btn[1].img[1],NULL,ecran,&btn[1].pos);
+						
+					}
+					else if (sourisSurbtn(btn[2].pos,event)) {
+						if ( compt<4 && && son <=100) {
+							compt++;
+							son +=25;
+						} 
+							
+					}
+					else if (sourisSurbtn(btn[3].pos,event)) {
+						if ( compt >= 4 && son >=0) {
+							compt--;
+							son-=25;
+					}
+					else if (sourisSurbtn(btn[4].pos,event)) {
+						//fullscreen
+					}
+					else if (sourisSurbtn(btn[5].pos,event)) {
+						//windowed
+					}
+					
+					
+
+
+
+
+
+
+
+		
+
+}
+}
+}
+
+
+
+
+
+
+

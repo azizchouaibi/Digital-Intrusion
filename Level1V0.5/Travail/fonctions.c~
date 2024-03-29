@@ -1,0 +1,13 @@
+#include "header.h"
+void initBiblio(image *IMG) {
+	if (SDL_Init(SDL_INIT_EVERYTHING)!=0) {
+		printf("ERROR INITIALIZING SDL\n");
+		SDL_Quit();
+		}
+SDL_Surface *ecran;
+SDL_Surface *img;
+img = IMG_Load("/home/aziz/Desktop/AzizCh/Gaza.png");
+if ( img==NULL) {	
+	printf("ERROR OPENING IMAGE\n");
+	
+	
