@@ -690,7 +690,31 @@ if (optionmenu==true){
 				}//END PLAY
 			
 			} // end gameloop;
-
+			
+			
+			//SAUVEGARDE DU SCORE
+			
+			if ( sauvegarde_score(score,"score.txt") == false ) {
+				printf("ERROR SAVING SCORE \n");
+			} else {
+				printf("SCORE SAVED \n");
+			}
+			//HIGHEST_SCORE
+			
+			Uint32	highest_score;
+			highest_score=best_score("score.txt");
+			if ( best_score == 0 ) {
+					printf("ERROR LOADING HIGHEST SCORE \n");
+			}else {
+				printf("HIGHEST SCORE : %u \n",highest_score);
+			}
+			
+			
+				
+			
+			
+			
+		
 int p;
 	for( p=0 ; p < 14 ; p++) {
 		SDL_FreeSurface(player.texture[p]);

@@ -61,7 +61,7 @@ Button* loadoptions(SDL_Surface *ecran, SDL_Surface *backg, SDL_Rect posopt); //
 //void loadoptions(SDL_Surface *ecran,  SDL_Surface * backg, SDL_Rect posopt) ;
 //void hover(SDL_Rect posbtn, char chemin1[100] , char chemin0[100], SDL_Event event,SDL_Surface *ecran);
 bool backspace(SDL_Event );
-
-	
+bool sauvegarde_score(Uint32 score,const char *filename);
+Uint32 best_score(const char *filename);
 
 #endif

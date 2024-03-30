@@ -557,8 +557,55 @@ SDL_Surface ** initAnimBack() {
 	return tab;
 }
 	
-		
-		
+bool sauvegarde_score(Uint32 score,const char *filename) {
+	FILE* fich=NULL;
+	fich=fopen(filename,"a+");
+		if (fich==NULL) {
+			printf("ERROR LOADING SCORE FILE (SAUVEGARDE SCORE) \n");
+			return false;
+		}else {
+			fprintf(fich,"%u\n",score);
+			fclose(fich);
+			return true;
+		}
+}
+
+Uint32 best_score(const char *filename) {
+	FILE* fich=NULL;
+	fich = fopen(filename,"r");
+	Uint32 high_score=0,current_score;
+	
+	
+	if ( fich==NULL) {
+		printf("ERROR LOADING SCORE FILE (HIGHEST SCORE) \n");
+		return 0;
+		} else {
+			while (fscanf(fich,"%u\n",&current_score) == 1 ) {
+					if ( current_score > high_score) {
+						high_score=current_score;
+					}
+				}
+			fclose(fich);
+			return high_score;
+		}
+	}
+	
+				
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 			
 
 
