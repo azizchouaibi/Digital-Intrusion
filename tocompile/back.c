@@ -1,61 +1,64 @@
 #include "back.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <SDL/SDL_image.h>
-#include "perso.h"
-void initBackground(Background *background1, Background *background2) {
-    background1->image = IMG_Load("ack1.png");
-    background2->image = IMG_Load("ack2 (2).png");
-    
-    background1->camera_pos.x = 0;
-    background1->camera_pos.y = 0;
-    background1->camera_pos.w = SCREEN_WIDTH;
-    background1->camera_pos.h = SCREEN_HEIGHT;
 
-    background2->camera_pos.x = 1920;
-    background2->camera_pos.y = 0;
-    background2->camera_pos.w = SCREEN_WIDTH;
-    background2->camera_pos.h = SCREEN_HEIGHT;
-    
-    background1->direction = 0;
-    background2->direction = 0;
+ int LargeurEcran;
+ int HauteurEcran;
+ int LargeurImageBackground;
+ int HauteurImageBackground;
+ Uint32 last_image_change_time=0;
+
+void initBackground(Background *bg, SDL_Surface *screen,char* chemin1 , char * chemin2) {
+    bg->image = IMG_Load(chemin1);
+    if (bg->image == NULL) {
+        printf("Erreur lors du chargement de l'image de fond principale : %s\n", IMG_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    bg->secondary_image = IMG_Load(chemin2);
+    if (bg->secondary_image == NULL) {
+        printf("Erreur lors du chargement de l'image de fond secondaire : %s\n", IMG_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    bg->camera_pos.x = 0;
+    bg->camera_pos.y = 0;
+    bg->camera_pos.w = screen->w;
+    bg->camera_pos.h = screen->h;
+    bg->showing_main_image = true;
 }
 
-void scrolling(Background *background1, Background *background2, int direction, int dx, int dy) {
-    if (direction == 0) { // Défilement horizontal
-        background1->camera_pos.x += dx;
-        background2->camera_pos.x += dx;
+void toggleBackgroundImage(Background *bg) {
+    bg->showing_main_image = !bg->showing_main_image;
+}
 
-        if (background1->camera_pos.x <= background1->image->w) {
-            background1->camera_pos.x = background2->camera_pos.x + SCREEN_WIDTH;
-        } else if (background1->camera_pos.x >= SCREEN_WIDTH) {
-            background1->camera_pos.x = background2->camera_pos.x - background1->image->w;
-        }
+void scrollingHorizontal(Background *bg, int dx) {
+    bg->camera_pos.x += dx;
 
-        if (background2->camera_pos.x <= -background2->image->w) {
-            background2->camera_pos.x = background1->camera_pos.x + SCREEN_WIDTH;
-        } else if (background2->camera_pos.x >= SCREEN_WIDTH) {
-            background2->camera_pos.x = background1->camera_pos.x - background2->image->w;
-        }
-         
-         
-         
-         
-    } else if (direction == 1) { // Défilement vertical
-        background1->camera_pos.y += dy;
-        background2->camera_pos.y += dy;
+    if (bg->camera_pos.x >= bg->image->w - bg->camera_pos.x  ) {
+        bg->camera_pos.x = 0;
 
-        // Limite supérieure du défilement vertical
-        if (background1->camera_pos.y < 0) {
-            background1->camera_pos.y = 0;
-            background2->camera_pos.y = 0;
-        }
-        // Limite inférieure du défilement vertical
-        else if (background1->camera_pos.y > (background1->image->h - SCREEN_HEIGHT)) {
-            background1->camera_pos.y = background1->image->h - SCREEN_HEIGHT;
-            background2->camera_pos.y = background2->image->h - SCREEN_HEIGHT;
-        }
-      
+    } else if (bg->camera_pos.x < 0) {
+        bg->camera_pos.x = bg->image->w - bg->camera_pos.w;
     }
 }
 
+void scrollingVertical(Background *bg, int dy) {
+    bg->camera_pos.y += dy;
 
+    if (bg->camera_pos.y >= bg->image->h) {
+        bg->camera_pos.y = 0;
+    } else if (bg->camera_pos.y < 0) {
+        bg->camera_pos.y = bg->image->h - bg->camera_pos.h;
+    }
+}
+
+void updateBackgroundImage(Background *bg) {
+    Uint32 current_time = SDL_GetTicks();
+    if (current_time - last_image_change_time >= 1000) {
+        toggleBackgroundImage(bg);
+        last_image_change_time = current_time;
+    }
+}
 

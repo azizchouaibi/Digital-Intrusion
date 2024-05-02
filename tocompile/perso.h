@@ -7,7 +7,15 @@
 #include <stdbool.h>
 #include <time.h>
 #include "back.h"
+#include <math.h>
 #define ground 500
+
+
+
+
+
+
+
 typedef struct {
 	
 	SDL_Rect posinit;
@@ -19,6 +27,7 @@ typedef struct {
 	SDL_Rect posvie;
 	double acc;
 	SDL_Surface * dmg;
+	int dx;
 
 }Person;
 
@@ -42,10 +51,14 @@ typedef struct {
 
 
 Backg initbackground(Backg  Back);
+//TEST POUR TACHE COLLISION
+int InitES(SDL_Surface **ES, SDL_Surface **Coin,  char* cheminES, char *cheminCoin, SDL_Rect *poses , SDL_Rect * posCoin);
+void afficherES(SDL_Surface *screen, SDL_Surface *ES, SDL_Surface *Coin, SDL_Rect poses_ES, SDL_Rect poses_Coin);
+
+int Collided(Person p , SDL_Rect poses); // 1 Player damaged , 2 Es damaged
 
 
 
- 
  
 
  

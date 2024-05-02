@@ -6,6 +6,7 @@
 #include <SDL/SDL_mixer.h>
 #include <stdbool.h>
 #include <SDL/SDL_ttf.h>
+#include "perso.h"
 
 void dimenstionsBTN(SDL_Rect* btn1,SDL_Rect *btn2,SDL_Rect *btn3,SDL_Rect* btn4,SDL_Surface * btnclick0) {
 	btn1->x=218;
@@ -591,6 +592,133 @@ Uint32 best_score(const char *filename) {
 	}
 	
 				
+void show_high_score(SDL_Surface * ecran, SDL_Surface *SurfText) {
+	Uint32 score= best_score("score.txt");
+		char * high=malloc(10 * sizeof(char));
+		TTF_Font *font;
+		SDL_Color txtcolor;
+		SDL_Rect postxtEcran;
+		sprintf(high,"Best Score : %d",score);
+		postxtEcran.x=100;
+		postxtEcran.y=950;
+		txtcolor.r=255;
+		txtcolor.g=0;
+		txtcolor.b=0;
+		font =TTF_OpenFont("FOnt.ttf",50);
+			if (!font) {
+				printf("ERROR LOADING FONT FOR HUGH SCORE\n");
+			}
+			SurfText=TTF_RenderText_Solid(font,high,txtcolor);
+				if ( SurfText ==NULL){
+					printf("ERROR LOADING TEXT SURFACE FOR HIGHEST SCORE\n");
+				}
+SDL_BlitSurface(SurfText,NULL,ecran,&postxtEcran);
+}
+
+
+			
+/*void Pass_to_Next_Level( SDL_Surface * Loading[3] ,  SDL_Surface *ecran , Mix_Chunk ** SFX , Person *p , Background * TabBack[3] , int indlvl ) {		
+Loading[0]= IMG_Load("for ts/lo.png");
+Loading[1]=IMG_Load("for ts/lod2.png");
+Loading[2]=IMG_Load("for ts/lod3.png");
+int i;
+	 if (!Loading[0] || !Loading[1] || !Loading[2]) {
+        printf("ERROR LOADING NEXT LEVEL TRANSITION IMAGE\n");
+
+        return;
+    }
+	*SFX=Mix_LoadWAV("nxtlvlSFX.wav");
+	if  ( !(*SFX)) {
+			printf("ERROR LOADING NEXT LEVEL TRANSITION AUDIO");
+			return ;
+		}
+		Mix_PlayChannel(-1,*SFX,0);
+		for ( i = 0 ; i < 12 ; i++) {
+			SDL_BlitSurface(Loading[i % 3 ],NULL,ecran,NULL);
+			SDL_Flip(ecran);
+			SDL_Delay(90);
+			}
+			
+			p->num_hearts=3;
+			p->posinit.x=200;
+			p->posinit.y=500;
+		TabBack[indlvl-1]->camera_pos.x = 0;
+    TabBack[indlvl-1]->camera_pos.y = 0;
+    TabBack[indlvl-1]->camera_pos.w = ecran->w;
+    TabBack[indlvl-1]->camera_pos.h = ecran->h;
+			SDL_Delay(1500);
+}*/
+void Pass_to_Next_Level(SDL_Surface *Loading[3], SDL_Surface *ecran, Mix_Chunk **SFX, Person *p, Background *TabBack[3], int indlvl) {
+    // Load images
+    Loading[0] = IMG_Load("for ts/lo.png");
+    Loading[1] = IMG_Load("for ts/lod2.png");
+    Loading[2] = IMG_Load("for ts/lod3.png");
+
+    // Check for errors in loading images
+    if (!Loading[0] || !Loading[1] || !Loading[2]) {
+        printf("ERROR LOADING NEXT LEVEL TRANSITION IMAGES\n");
+        // Clean up resources and return
+        for (int i = 0; i < 3; i++) {
+            if (Loading[i]) {
+                SDL_FreeSurface(Loading[i]);
+                Loading[i] = NULL;
+            }
+        }
+        return;
+    }
+
+    // Load audio
+    *SFX = Mix_LoadWAV("nxtlvlSFX.wav");
+    // Check for errors in loading audio
+    if (!(*SFX)) {
+        printf("ERROR LOADING NEXT LEVEL TRANSITION AUDIO\n");
+        // Clean up resources and return
+        for (int i = 0; i < 3; i++) {
+            if (Loading[i]) {
+                SDL_FreeSurface(Loading[i]);
+                Loading[i] = NULL;
+            }
+        }
+        return;
+    }
+
+    // Play audio
+    Mix_PlayChannel(-1, *SFX, 0);
+
+
+    for (int i = 0; i < 32; i++) {
+        SDL_BlitSurface(Loading[i % 3], NULL, ecran, NULL);
+        SDL_Flip(ecran);
+        SDL_Delay(90);
+    }
+
+
+    p->num_hearts = 3;
+    p->posinit.x = 200;
+    p->posinit.y = 500;
+
+
+    if (indlvl >= 1 && indlvl <= 3) {
+        TabBack[indlvl - 1]->camera_pos.x = 0;
+        TabBack[indlvl - 1]->camera_pos.y = 0;
+        TabBack[indlvl - 1]->camera_pos.w = ecran->w;
+        TabBack[indlvl - 1]->camera_pos.h = ecran->h;
+    }
+
+
+    SDL_Delay(1500);
+
+
+    for (int i = 0; i < 3; i++) {
+        if (Loading[i]) {
+            SDL_FreeSurface(Loading[i]);
+            Loading[i] = NULL;
+        }
+    }
+}
+
+
+
 	
 	
 	
