@@ -6,7 +6,7 @@ Person  InitPerso(Person  player ) {
 	int i;
 	
 	
-	for (i=0;i<15;i++) {
+	for (i=0;i<16;i++) {
 		player.texture[i]=NULL;
 	}
 	
@@ -25,17 +25,15 @@ Person  InitPerso(Person  player ) {
 	player.texture[12]=IMG_Load("anim perso test/jump1L.png");
 	player.texture[13]=IMG_Load("anim perso test/jump2L.png");
 	player.texture[14]=IMG_Load("anim perso test/dmg.png");
-
+	player.texture[15]=IMG_Load("anim perso test/slidertxt.png");
 	
 	
 	
 	
-	for (i=0;i<15;i++) {
+	for (i=0;i<16;i++) {
 		if (player.texture[i]==NULL) {
 			printf("ERREUR LODING IMAGE n %d\n",i);
-		} else {
-			printf("SUCCES %d " , i);
-		}
+		} 
 		
 	}
 	
@@ -65,6 +63,8 @@ Person  InitPerso(Person  player ) {
     	player.posvie.x=1596;
     	player.posvie.y=50;
   player.dx=20;
+	player.energy=100;
+	player.score=0;
 	
 	//player.dmg=IMG_Load("/home/aziz/Desktop/Integration/anim perso test/dmg.png");
 	
@@ -174,13 +174,13 @@ void afficher_score(int score ,  SDL_Rect * PosTxt, SDL_Surface * *SurfText , TT
 
 ///////////////////////////////////////////////////////TEST POUR COLLISION ///////////////////////////////////////////////////////////////////////////
 
-int Collided(Person player, SDL_Rect enemyPos) { // COLLISION BOUNDING BOX
+int Collided(SDL_Rect player, SDL_Rect enemyPos) { // COLLISION BOUNDING BOX
 
     int TolerancePiedY = 10; 
     int ToleranceTeteY = 50; 
     int ToleranceSaut=20;
 
-    SDL_Rect playerBox = {player.posinit.x, player.posinit.y, player.posinit.w, player.posinit.h + TolerancePiedY};
+    SDL_Rect playerBox = {player.x, player.y, player.w, player.h + TolerancePiedY};
     SDL_Rect enemyBox = {enemyPos.x, enemyPos.y - ToleranceTeteY, enemyPos.w, enemyPos.h + ToleranceTeteY};
     
 
@@ -224,22 +224,26 @@ int InitES(SDL_Surface **ES, SDL_Surface **Coin,  char* cheminES, char *cheminCo
     return 1; 
 }
 
-void afficherES(SDL_Surface *screen, SDL_Surface *ES, SDL_Surface *Coin, SDL_Rect poses_ES, SDL_Rect poses_Coin) {
-    SDL_BlitSurface(ES, NULL, screen, &poses_ES); 
-    SDL_BlitSurface(Coin, NULL, screen, &poses_Coin); 
+void afficherES(SDL_Surface *screen,Entity E) {
+    SDL_BlitSurface(E.texture, NULL, screen, &E.pos); 
 
 }
 
-void deplacerES(SDL_Rect * coin, SDL_Rect * es) {
-	es->x-=10;
-	coin->x-=3;
-	if ( es->x == 0) {
-	es->x = 1600;
+void deplacerES(Entity *E, int dx) {
+	E->pos.x-=dx;
+	if ( E->pos.x == 0) {
+	E->pos.x = 1600;
 	}
-	if ( coin->y > 1000) {
-			coin->y=ground+100;
-			coin->x=2500;			
+}
+
+void deplacerCoin(Entity *C, int dx){
+
+	C->pos.x-=dx;
+	if ( C->pos.y > 1000) {
+			C->pos.y=ground+100;
+			C->pos.x=2500;			
 	}
+	
 }
 
 	
@@ -272,7 +276,7 @@ int CollisionTrigo(SDL_Rect C, Person P) {
 }
 			
 			
-void HandleCollision_Player_Bonus (Person * p , SDL_Rect* C , int *score,Mix_Chunk * CoinSFX) {
+int HandleCollision_Player_Bonus (Person * p , SDL_Rect* C , int *score,Mix_Chunk * CoinSFX) {
 		static unsigned int lastCollisionTime = 0; // Static variable to store the time of the last collision
     const unsigned int delay = 1000; // Delay between collisions in milliseconds
 
@@ -293,19 +297,61 @@ void HandleCollision_Player_Bonus (Person * p , SDL_Rect* C , int *score,Mix_Chu
             *score += 500;
             C->y = 1110;
         }
+        p->energy+=77;
 	
         // Update the time of the last collision
         lastCollisionTime = currentTime;
+        return 1;
     }
+
 }
 	
-					
+
+
+
+
+
+
+
+
+
+
+Entity InitEntity(char* chemin, int x , int y,int dx) { // starting posotions{
+				Entity e;
+				e.texture=IMG_Load(chemin);
+					if ( !e.texture) {
+						printf("ERROR LOADING Entity %s\n",chemin);
+					}
+					e.pos.x=x;
+					e.pos.y=y;
+					e.active=false;
+					e.dx=dx;
+				return e;
+}		
 			
 				
+
 	
-	
-	
-	
+	void afficher_energy(Person player,  SDL_Rect * PosTxt, SDL_Surface * *SurfText , TTF_Font * font , SDL_Color txtCoul) {
+		
+		
+		PosTxt->x=1596;
+		PosTxt->y=150;
+		PosTxt->w=50;
+		PosTxt->h=20;
+		
+		txtCoul.r=150;
+		txtCoul.g=0;
+		txtCoul.b=255;
+		char Cenergy[10];
+		sprintf(Cenergy,"%d",player.energy);
+			if ( player.energy >= 0 && player.energy <= 25 ) {txtCoul.r=255;txtCoul.g=0;txtCoul.b=0;}
+						if ( player.energy >= 25 && player.energy <= 75 ) {txtCoul.r=255;txtCoul.g=255;txtCoul.b=0;}
+												if ( player.energy >= 75 && player.energy <= 100 ) {txtCoul.r=0;txtCoul.g=255;txtCoul.b=0;}
+				  
+		*SurfText=TTF_RenderText_Solid(font,Cenergy,txtCoul);
+			
+}
 
 
 	

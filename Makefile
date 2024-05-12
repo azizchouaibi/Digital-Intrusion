@@ -1,5 +1,5 @@
-executable: main.o fonctions.o back.o perso.o tictactoe.o enigme.o
-	gcc main.o fonctions.o back.o perso.o tictactoe.o enigme.o  -o executable -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf -lSDL_gfx -lm
+executable: main.o fonctions.o back.o perso.o tictactoe.o enigme.o minimap.o second_person.o
+	gcc main.o fonctions.o back.o perso.o tictactoe.o enigme.o minimap.o second_person.o -o executable -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf -lSDL_gfx -lm
 	./executable
 fonctions.o: tocompile/fonctions.c
 	gcc -c tocompile/fonctions.c
@@ -11,9 +11,19 @@ tictactoe.o: tocompile/tictactoe.c tocompile/tictactoe.h
 	gcc -c tocompile/tictactoe.c -o tictactoe.o
 enigme.o: tocompile/enigme.c tocompile/enigme.h
 	gcc -c tocompile/enigme.c 
+minimap.o: tocompile/minimap.c tocompile/minimap.h
+	gcc -c tocompile/minimap.c
+second_person.o: tocompile/second_person.c
+	gcc -c tocompile/second_person.c
 main.o: tocompile/main.c 
 	gcc -c tocompile/main.c
 
 clean:
 	rm -f *.o executable
+mkbackup:
+	mkdir /home/aziz/Desktop/Backup
+	echo "Backup Created"
+backup:
+	cp -r /home/aziz/Desktop/Digital_Intrusion /home/aziz/Desktop/Backup
+	
 

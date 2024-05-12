@@ -1,5 +1,4 @@
-#ifndef ENIGME_H
-#define ENIGME_H
+
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
@@ -16,6 +15,7 @@ typedef struct {
 // Structure pour les énigmes
 typedef struct {
     SDL_Surface *img;
+    SDL_Surface *res;
     SDL_Surface *timer[10];
     SDL_Rect p;
     SDL_Rect pos_timer;
@@ -31,5 +31,5 @@ void init_enigme(enigme *e);
 void generate_afficher(int *alea);
 int enigme_play(SDL_Surface* screen);
 
-#endif // ENIGME_H
+
 

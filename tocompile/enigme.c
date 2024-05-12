@@ -41,17 +41,17 @@ void init_enigme(enigme *e) {
 // Afficher le résultat (win ou lose) avec un délai de 5 secondes
 void afficher_resultat(SDL_Surface *screen, int s, int r, enigme *en) {
     if (r == s) {
-        en->img = IMG_Load("img/win.jpg");
+        en->res = IMG_Load("img/win.jpg");
     } else {
-        en->img = IMG_Load("img/lose.jpg");
+        en->res = IMG_Load("img/lose.jpg");
     }
 
-    SDL_BlitSurface(en->img, NULL, screen, &(en->p));
+    SDL_BlitSurface(en->res, NULL, screen, &(en->p));
     SDL_Flip(screen);
 
     // Délai de 5 secondes
-    SDL_Delay(3000); // Attendre 5 secondes
-    SDL_FreeSurface(en->img);
+    //SDL_Delay(3000); // Attendre 5 secondes
+    //SDL_FreeSurface(en->img);
 }
 void generate_afficher(int *alea) {
     int test = *alea; // Variable temporaire
@@ -75,7 +75,7 @@ int enigme_play(SDL_Surface* screen) {
     init_enigme(&e);
     initexte(&tt);
 
-    while (boucle) {
+   while (boucle) {
         SDL_BlitSurface(e.img, NULL, screen, &e.p);
         SDL_Flip(screen);
 

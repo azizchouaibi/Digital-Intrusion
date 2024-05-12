@@ -135,7 +135,7 @@ void loadlevel1(SDL_Surface *lvlback , SDL_Surface *ecran , SDL_Rect posback) {
 	else {
 	 
 		
-		printf("LEVEL 1 \n");
+
 		posback.x=0;
 		posback.y=0;
 		posback.h=lvlback->h;
@@ -214,7 +214,7 @@ Button* loadoptions(SDL_Surface *ecran, SDL_Surface *backg, SDL_Rect posopt) {
         free(btn);
         return NULL;
     } else {
-        printf("Background loaded successfully\n");
+
         posopt.x = 0;
         posopt.y = 0;
         posopt.w = backg->w;
@@ -227,43 +227,32 @@ Button* loadoptions(SDL_Surface *ecran, SDL_Surface *backg, SDL_Rect posopt) {
     btn[0].img[1] = IMG_Load("ts_opt/off.png");
     if (btn[0].img[1] == NULL) {
         printf("ERROR LOADING IMAGE 1\n");
-    } else {
-        printf("SUCCESS\n");
-    }
-printf("OKay \n");
+    } 
+
 		btn[1].img[0]=IMG_Load("ts_opt/foo_on.png");
 		btn[1].img[1]=IMG_Load("ts_opt/foo.png");
 			if ( btn[1].img[1] ==NULL || btn[1].img[0]==NULL) {
 				printf("ERROR 2");
-			}else {
-				printf("SUCCES ");
 			}
 		
-				printf("OKay \n");
+
 		btn[4].img[0]=IMG_Load("ts_opt/full_non_hov.png");
 		btn[4].img[1]=IMG_Load("ts_opt/full1.png");
 			if ( btn[4].img[1]==NULL) {
 				printf("ERROR 3");
-			}else {
-				printf("SUCCES ");
 			}
-				printf("OKay \n");
+
 		btn[5].img[0]=IMG_Load("ts_opt/win_nonhov.png");
 		btn[5].img[1]=IMG_Load("ts_opt/win1.png");
 			if ( btn[5].img[1]==NULL) {
 				printf("ERROR 4");
-			}else {
-				printf("SUCCES ");
 			}
 		
-				printf("OKay \n");
+
 		btn[6].img[0]=IMG_Load("ts_opt/4.png");
 			if ( btn[6].img[0]==NULL) {
 				printf("ERROR 5");
-			}else {
-				printf("SUCCES ");
 			}
-			printf("OKay \n");
 			
 		// initialisation des positions des boutons : 
 		
@@ -271,40 +260,40 @@ printf("OKay \n");
 		btn[0].pos.y=407;
 		btn[0].pos.w=btn[0].img[1]->w;
 		btn[0].pos.h=btn[0].img[1]->h;
-				printf("OKay \n");
+
 		btn[1].pos.x=1327; // SFX OFF OU ON
 		btn[1].pos.y=575;
-			printf("OKay \n");
+
 		btn[1].pos.w=btn[1].img[1]->w;
 		btn[1].pos.h=btn[1].img[1]->h;
-			printf("OKay \n");
+
 		btn[2].pos.x=1335; // Flech droite mta3 el sout
 		btn[2].pos.y=713;
 		btn[2].pos.w=80;
 		btn[2].pos.h=80;	
-			printf("OKay \n");
+
 		btn[3].pos.x=591;
 		btn[3].pos.y=713; // fleche gauche mta3 el sout
 		btn[3].pos.w=80;
 		btn[3].pos.h=80;
-			printf("OKay \n");
+
 		
 		btn[4].pos.x=375; // button fullscreen
 		btn[4].pos.y=834;
 		btn[4].pos.w=btn[4].img[1]->w;
 		btn[4].pos.h=btn[4].img[1]->h;
 		printf("%d\t %d\t %d\t %d\t ",btn[4].pos.w,btn[4].pos.h,btn[4].pos.x,btn[4].pos.y);
-			printf("OKay \n");
+
 		btn[5].pos.x=1000; // button windowed
 		btn[5].pos.y=834;
 		btn[5].pos.w=btn[5].img[1]->w;
 		btn[5].pos.h=btn[5].img[1]->h;
-			printf("OKay \n");
+
 		btn[6].pos.x=621; // el slider mt3 el sout
 		btn[6].pos.y=718;
 		btn[6].pos.w=btn[6].img[0]->w;
 		btn[6].pos.h=btn[6].img[0]->h;
-			printf("OKay \n");
+
 
    
     return btn; // Return the array of buttons
@@ -571,17 +560,17 @@ bool sauvegarde_score(Uint32 score,const char *filename) {
 		}
 }
 
-Uint32 best_score(const char *filename) {
+int best_score(const char *filename) {
 	FILE* fich=NULL;
 	fich = fopen(filename,"r");
-	Uint32 high_score=0,current_score;
+	int high_score=0,current_score;
 	
 	
 	if ( fich==NULL) {
 		printf("ERROR LOADING SCORE FILE (HIGHEST SCORE) \n");
 		return 0;
 		} else {
-			while (fscanf(fich,"%u\n",&current_score) == 1 ) {
+			while (fscanf(fich,"%d\n",&current_score) == 1 ) {
 					if ( current_score > high_score) {
 						high_score=current_score;
 					}
@@ -593,7 +582,7 @@ Uint32 best_score(const char *filename) {
 	
 				
 void show_high_score(SDL_Surface * ecran, SDL_Surface *SurfText) {
-	Uint32 score= best_score("score.txt");
+	int score= best_score("score.txt");
 		char * high=malloc(10 * sizeof(char));
 		TTF_Font *font;
 		SDL_Color txtcolor;
@@ -709,12 +698,7 @@ void Pass_to_Next_Level(SDL_Surface *Loading[3], SDL_Surface *ecran, Mix_Chunk *
     SDL_Delay(1500);
 
 
-    for (int i = 0; i < 3; i++) {
-        if (Loading[i]) {
-            SDL_FreeSurface(Loading[i]);
-            Loading[i] = NULL;
-        }
-    }
+   
 }
 
 

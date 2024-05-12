@@ -47,7 +47,7 @@ void scrollingHorizontal(Background *bg, int dx) {
 void scrollingVertical(Background *bg, int dy) {
     bg->camera_pos.y += dy;
 
-    if (bg->camera_pos.y >= bg->image->h) {
+    if (bg->camera_pos.y >= bg->image->h -bg->camera_pos.y) {
         bg->camera_pos.y = 0;
     } else if (bg->camera_pos.y < 0) {
         bg->camera_pos.y = bg->image->h - bg->camera_pos.h;
@@ -59,6 +59,21 @@ void updateBackgroundImage(Background *bg) {
     if (current_time - last_image_change_time >= 1000) {
         toggleBackgroundImage(bg);
         last_image_change_time = current_time;
+    }
+}
+
+
+void checkPlayerBounds(SDL_Rect *playerZone, int *posX, int *posY, int playerWidth) {
+    if (*posX < playerZone->x) {
+        *posX = playerZone->x;
+    } else if (*posX + playerWidth > playerZone->x + playerZone->w) {
+        *posX = playerZone->x + playerZone->w - playerWidth;
+    }
+
+    if (*posY < playerZone->y) {
+        *posY = playerZone->y;
+    } else if (*posY + playerWidth > playerZone->y + playerZone->h) {
+        *posY = playerZone->y + playerZone->h - playerWidth;
     }
 }
 

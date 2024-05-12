@@ -2,12 +2,32 @@
 #include "header.h"
 #include "tictactoe.h"
 #include "enigme.h"
-
+#include "minimap.h"
+#include <time.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <string.h>
 #define SCREEN_WIDTH 1920
 #define DAMAGE_COOLDOWN 2// 2 second
-
+#define ARDUINO_SERIAL_PORT "/dev/ttyACM0"  // notre port arduino
 
 int main(){
+
+
+int num_j;
+int manette;
+do {
+printf(" Joueurs ? \n");
+scanf("%d",&num_j);
+printf("Manette ?\n");
+scanf("%d",&manette);
+}while ( manette > 1 || manette < 0 || num_j > 2 || num_j < 0 );
+   // srand(time(NULL));
+				int collected=0;
+					                   enigme e;
+printf("=========STARTED=========\n");
+
 //VARIABLES GLOABLES
 time_t lastDamageTime = 0; 
 SDL_Event event;
@@ -17,7 +37,7 @@ bool gameloop=true;
 SDL_Surface *ecran=NULL;
 SDL_Surface *imgmenu=NULL,*play0=NULL,*play1=NULL,*opts0=NULL,*opts1=NULL,*credit0=NULL,*credit1=NULL,*quit0=NULL,*quit1=NULL,*lvlback=NULL,*ecranf,*ecranwin;
 SDL_Rect posimg,poslvl1;
-Mix_Music *musicmenu;
+Mix_Music *musicmenu,*cutSMusic;
 Mix_Chunk *click,*jumpSFX,*gameOverSFX,*dmgSFX,*CoinSFX;
 SDL_Rect play,opts,creds,quit;
 SDL_Surface *backg=NULL;
@@ -29,6 +49,7 @@ bool MsClick=false;
 bool sfClick=false;
 int compt=100;
 SDL_Surface *lamp1=NULL,*lamp2=NULL;
+bool benig=false;
 SDL_Rect poslmp;
 bool playb=false;
 bool lvl1=false;
@@ -37,11 +58,20 @@ bool lst =true;
 //bool enigmelvl1=false;
 bool playS=false;
 int indnv = 0 ;
+SDL_Surface *creditsIMG;
 //////NEXT LEVEL ANIMATION // 
 SDL_Surface * Loading[3];
 Mix_Chunk *  nxtlvlSFX=NULL;
+	bool show_obj=false;
+bool credit=false;
+				int bgscrolling=7;
+Mix_Chunk * slideSFX;
+SDL_Surface *lazer;
 
+	
 
+							double elapsed_jump;
+time_t level_start_time, current_time,time_j,jump_start_time;
 //INTILIAZATION ET CREATION DU FENETRE + AFFICHAGE D'IMAGE MENU + Chargement de music 
 
 
@@ -50,7 +80,7 @@ if (SDL_Init(SDL_INIT_EVERYTHING) !=0 ) {
 	SDL_Quit();
 } else {	
 	
-	ecran = SDL_SetVideoMode(1920,1080,32, /*SDL_FULLSCREEN|*/ SDL_HWSURFACE| SDL_DOUBLEBUF);
+	ecran = SDL_SetVideoMode(1920,1080,32, /*SDL_FULLSCREEN|*/ SDL_HWSURFACE| SDL_DOUBLEBUF | SDL_SRCALPHA);
 	if (ecran== NULL) {
 		printf("ERROR CREATING WINDOW");
 	}
@@ -74,7 +104,7 @@ if (SDL_Init(SDL_INIT_EVERYTHING) !=0 ) {
 	posimg.w=imgmenu->w;
 	dimenstionsBTN(&play,&opts,&creds,&quit,play0);
 }
-	
+
 	Mix_OpenAudio(48000,MIX_DEFAULT_FORMAT,2,4096);
         musicmenu=Mix_LoadMUS("r&m.mp3");
         if (musicmenu ==NULL) {
@@ -100,8 +130,21 @@ if (SDL_Init(SDL_INIT_EVERYTHING) !=0 ) {
 	if ( !CoinSFX) {
 			printf("ERROR LOADING COIN SFX\n");
 		}
+	slideSFX=Mix_LoadWAV("slideSFX.wav");
+		if ( !slideSFX) {
+			printf("ERROR LOADING SLIDE SFX \n");
+			
+		}
+	creditsIMG=IMG_Load("credits.png");
+		if ( !creditsIMG) {
+				printf("ERROR LOADING CREDITS IMG\n");
+			}
 	
-	
+	lazer=IMG_Load("anim perso test/lazer.png");
+		if ( !lazer) {
+				printf("ERROR LOADING LAZER");
+			
+		}
 }
 if (TTF_Init() !=0 ) {
 	printf("ERROR LOADING TTF ");
@@ -131,6 +174,7 @@ test.w=379;
 
 poslmp.x=1600;
 poslmp.y=100;
+	
 
 //Mix_PlayMusic(musicmenu,-1);
 Mix_VolumeMusic(90);
@@ -152,17 +196,35 @@ initTictactoe(&t);
 	initialiser_back(&back);
 	initialiser_rotozoom(&z);
 bool tcc_won=false;
+////////////////
+Entity e1,e2,e3,CD_collect , Flash_collect , heart_collect,spider;
+Entity DotP1= InitEntity("mini_joueur.png",1000,400,0);
+Entity DotP2 = InitEntity("mini_es.png",0,0,0);
+e1= InitEntity( "enemy.png", 1950 , 650,10);
+e2= InitEntity("enemy2.png", 1950 ,650,12);
+e3= InitEntity( "enemy3.png", 1950 , 650,14);
+spider=InitEntity("spider.png",1925,-50,1);
+Flash_collect= InitEntity("disk.png", 1100 ,ground+100,0);
+heart_collect= InitEntity( "coin.png", 1000, ground+100,0);
+CD_collect= InitEntity("cd.png", 1100 , ground-200,0);
+Entity  TabEnt[3] = {e1,e2,e3};
 
-
-
-
-
+SDL_Rect PlPvPos;
 /////////
 //VARIABLE DE LEVEL 1 : 
 SDL_Rect PosTxt;
 	SDL_Surface * SurfText;
 	TTF_Font * font ;
 	SDL_Color txtCoul;
+	
+SDL_Rect PosEnergy;
+SDL_Surface *SurfEnergy	;
+SDL_Color energyCoul;
+SDL_Surface * TabCutscene[4];
+InitCutscene(TabCutscene);
+			int ind_cutscene=0;
+
+
 /*SDL_Surface * es;
 es = IMG_Load("Red_rectangle(1).png");
 SDL_Rect poses;
@@ -185,7 +247,7 @@ int ans;
 			pas.h=1080;
 
 
-Uint32 score=0;
+//int score=0;
 
 
 		SDL_Surface * ES=NULL,*Coin=NULL;
@@ -194,7 +256,11 @@ Uint32 score=0;
 			printf("ERROR LOADING ES AND COINS\n");
 			SDL_Quit();
 		}
-
+  minimap m1,m2,m3;
+    initmap(&m1,"minimaplvl1.png");
+    initmap(&m2,"minimaplvl2.png");
+    initmap(&m3,"minimaplvl3.png");
+		minimap TabMap[3]={m1,m2,m3};
 
 	int indlvl;
 Background TabBack[3];
@@ -205,11 +271,13 @@ Background TabBack[3];
 		initBackground(&TabBack[1], ecran,"lvl2img1.png","lvl2img2.png"); // back lvl 2
 		initBackground(&TabBack[2], ecran,"lvl3img1.png","lvl3img2.png"); // back lvl3
     
-
+		
 Person player;
 	 player=InitPerso(player);
-
-
+//Person p1;
+	//p1=InitPerso(p1);
+	//p1.posinit.x=1080;
+	
 font=TTF_OpenFont("FOnt.ttf",50);
 		if( font == NULL) {
 			printf("ERROR LOADING FONT  \n");
@@ -220,6 +288,10 @@ font=TTF_OpenFont("FOnt.ttf",50);
 		printf("ERROR LOADING MUSIC  \n");
 	}
 		
+	cutSMusic = Mix_LoadMUS("");
+		if ( !cutSMusic) {
+				printf("ERROR LOADING CUT SCENE MUSIC \n");
+		}
 
 						Mix_PlayMusic(musicmenu,-1);
 int Temps=0;
@@ -240,9 +312,89 @@ NOGO.y=933;
 NOGO.w=1198+182;
 NOGO.h=925+83;
 SDL_Surface * surft;
-// FIN VARIABLE LEVEL 1
-while (gameloop) {
+												bool cut_scene = false;
 
+// FIN VARIABLE LEVEL 1
+//VAR ARDUINO 
+int arduino_fd;
+    struct termios toptions;
+    char buffer[255];
+    int nbytes;
+bool ManetteRight=false;
+		bool ManetteLeft=false;
+		bool ManetteMil=false;
+
+//
+//// Init arduino/
+if (manette ==1) {
+
+
+    // Open the serial port
+    arduino_fd = open(ARDUINO_SERIAL_PORT, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    if (arduino_fd == -1) {
+        perror("Error opening serial port");
+        return -1;
+    }
+ 
+    // Set serial port options
+    tcgetattr(arduino_fd, &toptions);
+    cfsetispeed(&toptions, B9600);
+    cfsetospeed(&toptions, B9600);
+    toptions.c_cflag &= ~PARENB;
+    toptions.c_cflag &= ~CSTOPB;
+    toptions.c_cflag &= ~CSIZE;
+    toptions.c_cflag |= CS8;
+    tcsetattr(arduino_fd, TCSANOW, &toptions);
+
+
+
+		}
+		
+		
+		
+		//VAR POUR 2EME JOUEUR
+		SDL_Rect PLAYER2_ZONE = {0, 0, 960, 1080};
+		SDL_Rect PLAYER1_ZONE = {960, 0, 960, 1080};
+		Background bg1, bg2;
+		initBackground(&bg1, ecran,"mazem.png","/home/aziz/Desktop/Digital_Intrusion/lvl1img2.png");
+   		initBackground(&bg2, ecran,"mazem.png","/home/aziz/Desktop/Digital_Intrusion/lvl1img2.png");    
+		Person p1;
+	p1.posinit.x=1060;
+	p1.posinit.y=100;
+	Person p2;
+	p2.posinit.x=100;
+	p2.posinit.y=100;
+	p1.score=0;
+	loadPlayerSpriteSheet(&p1, "yosri.png");
+ loadPlayerSpriteSheet(&p2, "emna.png");					
+ bool p1r=false,p1l=false,p1u=false,p1d=false;
+bool p2r=false,p2l=false,p2u=false,p2d=false;
+      SDL_Rect PosScoreP2 = {1750,20,50,50};
+Uint32 moveInterval = 3000;  // 1 SECONDE		
+		Uint32 lastMoveTime_P1,lastMoveTime_P2;
+						 lastMoveTime_P1 = SDL_GetTicks();
+						 lastMoveTime_P2 = SDL_GetTicks();
+
+SDL_Surface *SurfText_P1=NULL;
+SDL_Surface *SurfText_P2=NULL;
+SDL_Surface * SurfTime_P1=NULL;
+SDL_Surface * SurfTime_P2=NULL;
+SDL_Rect PosVie_P1={950,20, 50 , 50};
+//SDL_Rect PosVie_P2={1120,20, 50 , 50};
+///
+////////
+SDL_Rect poslazer;
+	poslazer.x=player.posinit.x;
+	poslazer.y=player.posinit.y +50;
+	//bool player.shoot=false;
+	SDL_Rect camera = {0, 0, 1024, 768};
+while (gameloop) {
+if ( manette ==1) {
+nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
+}
+
+
+    				int EntityToShow = rand() % 3 ;
 if (mainmenu ) {
 optionmenu=false;
 playS=false;
@@ -284,6 +436,10 @@ if ( event.motion.x >=  0 && event.motion.x <= 640 )  {
 	SDL_BlitSurface(tab[2],NULL,ecran,&poslmp);
 }
 
+
+
+
+
 }
 
 
@@ -291,11 +447,35 @@ if ( event.motion.x >=  0 && event.motion.x <= 640 )  {
 
 
 //MISE A JOUR LEL ECRAN (necessaire) 
-SDL_Flip(ecran);
-//LA MUSIQUE W FAZET
 
+//ARDUINO MAIN MENU
+if ( manette==1) {
+if ( !playS && !Playing && !optionmenu && !gameover) {
+nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
+if ( nbytes >0) {
+	if (strstr(buffer,"pin 3")){
+		mainmenu=false;
+		playS=true;
+		
+
+	}
+	if (strstr(buffer,"pin 7")){
+		gameloop=false;
+		
+	
+	}
+	
+	if (strstr(buffer,"pin 13" )){
+			mainmenu=false;
+			optionmenu=true;
+	
+	
+	}
+}
+} 
+}
 			
-
+SDL_Flip(ecran);
 
 
 
@@ -307,12 +487,11 @@ SDL_Flip(ecran);
 			case SDL_KEYDOWN:
 			switch(event.key.keysym.sym) {
 				case SDLK_ESCAPE:
-				printf("EXITING...\n");
+				printf("--------Exit--------\n");
 				gameloop=false; 
 
 				break;
 				case SDLK_h:
-				printf("HELP REQUESTED\n");
 				break;
 				case SDLK_BACKSPACE:
 				mainmenu=true;
@@ -336,22 +515,23 @@ SDL_Flip(ecran);
 					if ( sfClick == false ) {Mix_PlayChannel(-1,click,0); }
 					mainmenu=false;
 					playS=true;
-					printf("TEST SUR CLICK  PASSE \n");
+
 				}
 /*options*/		else 
                         if(sourisSurbtn(opts,event) && event.button.button==SDL_BUTTON_LEFT ){
 					if ( sfClick == false ) {Mix_PlayChannel(-1,click,0); }
-					printf("Options\n");
+
 					mainmenu=false;
 					optionmenu=true;
 
-					printf("ok 3\n");
+
 
 
 				}
 /*credits*/		else if (sourisSurbtn(creds,event) && event.button.button==SDL_BUTTON_LEFT ){
 					if ( sfClick == false ) {Mix_PlayChannel(-1,click,0); }		
-					printf("Credits\n");
+										
+								credit=true;
 
 					
 				}
@@ -365,16 +545,18 @@ SDL_Flip(ecran);
 					SDL_Delay(10);
 					SDL_Quit();
 					gameloop=false;
-					printf("Quit\n");
+
 				}
 				
 				
-				
+		
+			
+	
 }
 	else if ( optionmenu ) { 
-			
-			if (sourisSurbtn(btn[0].pos,event) && event.button.button==SDL_BUTTON_LEFT) { // music on walla off
-							printf("Test 1 \n");
+						
+			if (sourisSurbtn(btn[0].pos,event) && event.button.button==SDL_BUTTON_LEFT  ) { // music on walla off
+
 						MsClick=!MsClick;						
 						Mix_VolumeMusic(0);
 			   	} 
@@ -387,24 +569,25 @@ SDL_Flip(ecran);
 			   	}
 			   if(sourisSurbtn(btn[4].pos,event) &&event.button.button==SDL_BUTTON_LEFT ) {
 			   if ( sfClick == false ) {Mix_PlayChannel(-1,click,0); }
-			   		printf("FULLSCREEN \n");
+
 					ecranf = SDL_SetVideoMode(1920,1080,32, SDL_FULLSCREEN |  SDL_HWSURFACE| SDL_DOUBLEBUF);
 					ecran=ecranf;
 				}
 				
 			   if (sourisSurbtn(btn[5].pos,event) &&  event.button.button==SDL_BUTTON_LEFT) {
 			   if ( sfClick == false ) {Mix_PlayChannel(-1,click,0); }
-			   		printf("WINDOWED MODE \n");
+
 			   		ecranwin= SDL_SetVideoMode(1920,1080,32, SDL_HWSURFACE| SDL_DOUBLEBUF);
 			   		ecran=ecranwin;	
 			   		}
-			if( (event.motion.x >= 1335 && event.motion.x <= 1335+80 && event.motion.y >=713 && event.motion.y <= 713 + 80 ) && (event.button.button==SDL_BUTTON_LEFT) ) { 
+
+			if(( (event.motion.x >= 1335 && event.motion.x <= 1335+80 && event.motion.y >=713 && event.motion.y <= 713 + 80 ) && (event.button.button==SDL_BUTTON_LEFT) ) ) { 
 				if ( compt <100 && compt>=0) {
 				compt+=25;
 				}
 				
 			 }
-			   if( (event.motion.x >= 591 && event.motion.x <= 591+60 && event.motion.y >=600 && event.motion.y <= 713 + 80 ) &&  event.button.button==SDL_BUTTON_LEFT ) {
+			   if(( (event.motion.x >= 591 && event.motion.x <= 591+60 && event.motion.y >=600 && event.motion.y <= 713 + 80 ) &&  event.button.button==SDL_BUTTON_LEFT ) ) {
 
 
 
@@ -418,6 +601,7 @@ SDL_Flip(ecran);
 
 
 }
+if ( credit) {mainmenu=false;SDL_BlitSurface(creditsIMG,NULL,ecran,&pas);} // 
 
 
  
@@ -431,8 +615,8 @@ SDL_Flip(ecran);
 
 
 if (optionmenu==true ){
-
-				
+								
+		
 		        SDL_BlitSurface(backg, NULL, ecran, &posopt);
 		        if ( MsClick == false) {
 			SDL_BlitSurface(btn[0].img[0],NULL,backg,&btn[0].pos);
@@ -458,7 +642,7 @@ if (optionmenu==true ){
 			  }
 			  
 
-			 
+			 	
 
 			 if (MsClick == false) {
 			 switch(compt) {
@@ -491,11 +675,12 @@ if (optionmenu==true ){
 			 
 }
 }	
+
 		
 
 
 			if ( playS ) {	
-
+						
 					SDL_BlitSurface(seleclevel,NULL,ecran,&posimg);
 					while ( SDL_PollEvent(&event)){
 						switch(event.type) {
@@ -504,7 +689,8 @@ if (optionmenu==true ){
 									case SDLK_KP1:
 										indlvl=1;
 										Playing=true;
-										playS=false;										
+										playS=false;
+										cut_scene=true;
 										break;
 									case SDLK_KP2:
 										indlvl=2;
@@ -529,37 +715,257 @@ if (optionmenu==true ){
 								}
 							}
 							}
-						}
+						
+						
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+							if ( manette==1) {
+							nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
+if ( nbytes >0) {
+
+	if (strstr(buffer,"pin 3")){
+			indlvl=1;
+			Playing=true;
+			playS=false;
+	}
+	if (strstr(buffer,"pin 7")){
+indlvl=2;
+Playing=true;
+playS=false;
+	
+	}
+	
+	if (strstr(buffer,"pin 13" )){
+			indlvl=3;
+			Playing=true;
+			playS=false;
+	
+	
+	}
+}
+}
+
+	
+					
+
+
+					}
+						
 						
 					if (Playing) {
+					
+						        time(&level_start_time);
 					Mix_PlayMusic(themelvl1,-1);
 						
 				do {
-				deplacerES(&posCoin,&poses);
-		
+
+			SDL_Rect posEsMnmp;
+		//BLITTAGE
 				if ( gameover== false){
 
+				
+				if ( num_j==1) {
+					if (cut_scene) { // cut scene
+						SDL_BlitSurface(TabCutscene[ind_cutscene],NULL,ecran,NULL);
+
+						if ( ind_cutscene <= 3 ) {
+						while(SDL_PollEvent(&event)) {
+							switch(event.type) {
+							 	case SDL_KEYDOWN:
+							 		switch(event.key.keysym.sym) {
+							 		case SDLK_SPACE:
+							 			if ( ind_cutscene < 3) {
+							 			ind_cutscene++;
+							 		} else {
+							 				cut_scene=false;
+							 				ind_cutscene=0;
+							 		}
+							 		break;
+							 		case SDLK_RETURN:
+							 			cut_scene=false;
+							 			ind_cutscene = 0;
+							 		break;
+
+							 		}
+							 	break;
+							}
+						}
+
+							printf("IND CUTSCENE %d\n etat Cut %d\n",ind_cutscene,cut_scene);
+
+					}
+
+					} else {
+						PlPvPos = (SDL_Rect) player.posinit;
+			 TabMap[indlvl-1].pos_joueur = MAJMinimap(player.posinit, 10, TabBack[indlvl-1].camera_pos);  // Adjust scale as needed
+			 TabMap[indlvl-1].pos_es =MAJMinimap(TabEnt[EntityToShow].pos, 10, TabBack[indlvl-1].camera_pos);
+				deplacerES(&TabEnt[EntityToShow],TabEnt[EntityToShow].dx);
+				deplacerCoin(&heart_collect,3);
 	       if (TabBack[indlvl-1].showing_main_image) {
             SDL_BlitSurface(TabBack[indlvl-1].image, &TabBack[indlvl-1].camera_pos, ecran, NULL);
         } else {
             SDL_BlitSurface(TabBack[indlvl-1].secondary_image, &TabBack[indlvl-1].camera_pos, ecran, NULL);
         }
         				updateBackgroundImage(&TabBack[indlvl-1]);
+        				afficher_score(player.score,&PosTxt,&SurfText ,font ,txtCoul );
+        				
+        				afficher_energy(player,&PosEnergy,&SurfEnergy ,font ,energyCoul );
 				SDL_BlitSurface(SurfText,NULL,ecran,&PosTxt);
-				afficherES(ecran,ES,Coin,poses,posCoin);
-				afficherPerso(&player, ecran);
-				afficher_score(score,&PosTxt,&SurfText ,font ,txtCoul );
-
-				}		
+				SDL_BlitSurface(SurfEnergy,NULL,ecran,&PosEnergy);
 				
+
+
+
+				afficherES(ecran,heart_collect);	
+				afficherPerso(&player, ecran);
+
+				if ( indlvl==2) {
+					if (Flash_collect.active) {
+							Flash_collect.pos.x-=3;
+							afficherES(ecran,Flash_collect);
+						} 
+						
+					if ( CD_collect.active) {
+						CD_collect.pos.x-=3;
+						afficherES(ecran,CD_collect);
+					}
+
+																deplacerES(&spider,spider.dx);
+																afficherES(ecran,spider);											
+																				spider.pos.y+=2;
+																			if ( spider.pos.y >= 110) {
+																					spider.pos.y=-20;
+																			}
+																				
+																	
+									
+							
+						
+					}
+						if ( player.shoot) {
+								SDL_BlitSurface(lazer,NULL,ecran,&poslazer);
+						}
+
+					afficherES(ecran,TabEnt[EntityToShow]);
+					afficherminimap(TabMap[indlvl-1], ecran);
+				}
+				}else { // si il ya 2 joueur // MULTIPLAYER
+						        Uint32 currentTime_P1 = SDL_GetTicks();
+						    	Uint32 currentTime_P2 = SDL_GetTicks();
+						    	printf("TIME %d ", currentTime_P1/1000);
+			 	SDL_BlitSurface(bg1.image, &bg1.camera_pos, ecran, &PLAYER1_ZONE);
+			 	SDL_BlitSurface(bg2.image, &bg2.camera_pos, ecran, &PLAYER2_ZONE);
+        		renderPlayerFrame(&p1, ecran,font);
+        		renderPlayerFrame(&p2,ecran,font);
+        		Deplacer_ET_NON_COLLISION(&p1, &DotP1, PLAYER1_ZONE, &lastMoveTime_P1, currentTime_P1, moveInterval);
+				Deplacer_ET_NON_COLLISION(&p2, &DotP2, PLAYER2_ZONE, &lastMoveTime_P2, currentTime_P2, moveInterval);
+        		afficherES(ecran,DotP1);
+				afficherES(ecran,DotP2);
+				
+
+
+				
+					
+       afficher_score(p1.score,&PosTxt,&SurfText_P2 ,font ,txtCoul );
+      afficher_score(p2.score,&PosTxt,&SurfText_P1 ,font ,txtCoul );
+      SDL_BlitSurface(SurfText_P1,NULL,ecran,&PosTxt);
+      SDL_BlitSurface(SurfText_P2,NULL,ecran,&PosScoreP2);
+      if ( timer(currentTime_P1 ,font, PosVie_P1,ecran) == 0) {printf("OVER\n");}
+
+        SDL_Flip(ecran); // Update screen
+        SDL_Delay(60); // Adjust frame rate
+			
+
+
+
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+									
+													
+
+				
+				}
+				
+				
+				
+        	
+				}
 				SDL_Flip(ecran);
 	while(SDL_PollEvent(&event)) {
+	if ( num_j==1 && !cut_scene) {
 		switch(event.type){
 			case SDL_KEYDOWN:
 				switch(event.key.keysym.sym) {
 					case SDLK_RIGHT:
+						if (  !jump){
 					right = true;
-
+					}
+					
+					
 					break;
 					case SDLK_LEFT:
 					left=true;
@@ -579,10 +985,21 @@ if (optionmenu==true ){
 					if ( jump == false) {
 					jump=true;
 					}
+					break;
+					case SDLK_c:
+							if ( player.posinit.x >=350 && player.energy > 25 ) {
+						player.slide=1;
+						bgscrolling=13;
+						}
+							
 					
 					break;
-					
+					case SDLK_x:
+						player.shoot=true;
+						break;
 				}
+				
+
 			break;
 		case SDL_KEYUP:
 			switch(event.key.keysym.sym) {
@@ -601,6 +1018,19 @@ if (optionmenu==true ){
 			}
 						player.textcourant=currenttext;
 						player.posinit.y=ground;
+			break;
+			case SDLK_c:
+						if ( player.slide == 1) {
+									player.slide=0;
+									player.textcourant=2;
+									
+									
+				}
+				bgscrolling=7;
+				player.posinit.y=ground;
+				break;
+			
+				
 			}
 			
 			
@@ -622,35 +1052,266 @@ if (optionmenu==true ){
 				jumpPerso (&player,-1);
 		}
 		}
-			
-			
-				
-				
-				
-				
-				
-				
-				
-	}//END OF POLL EVENT LOOP
-
+		
+		
+		
 	
+			
+			
+				
+				
+				
+				
+				
+				
+	} else {
+            if (event.type == SDL_QUIT) {
+                gameloop = false;
+            } else if (event.type == SDL_KEYDOWN) {
+                switch (event.key.keysym.sym) {
+                case SDLK_ESCAPE:
+
+					Playing=false;
+					mainmenu=true;
+					Mix_PlayMusic(musicmenu,-1);
+					break;
+                    case SDLK_UP:
+                        p1.direction = 3; // Set direction to p1u
+                        p1u=true;
+                    break;
+                    case SDLK_DOWN:
+                        p1.direction = 0; // Set direction to p1d
+                        p1d=true;
+                        break;
+                    case SDLK_LEFT:
+                        p1.direction = 1; // Set direction to p1l
+                        p1l=true;
+                        break;
+                    case SDLK_RIGHT:
+                        p1.direction = 2; // Set direction to p1r
+                        p1r=true;
+                        break;
+                  
+                    case SDLK_z:
+                    	p2.direction=3;
+                    	p2u=true;
+                    break;
+                    case SDLK_s:
+                    	p2.direction=0;
+                    	p2d=true;
+                    break;
+                    case SDLK_q:
+                    	p2.direction=1;
+                    	p2l=true;
+                    break;
+                    case SDLK_d:
+                    	p2.direction=2;
+                    	p2r=true;
+                    break;
+                    	
+                }
+            } else if (event.type == SDL_KEYUP) {
+                switch (event.key.keysym.sym) {
+                    case SDLK_UP:
+
+                        p1u=false;
+                        break;
+                    case SDLK_DOWN:
+
+                        p1d=false;
+                        break;
+                    case SDLK_LEFT:
+
+                        p1l=false;
+                        break;
+                    case SDLK_RIGHT:
+
+                        p1r=false;
+                        break;
+                   
+                       case SDLK_z:
+
+                    	p2u=false;
+                    break;
+                    case SDLK_s:
+
+                    	p2d=false;
+                    break;
+                    case SDLK_d:
+
+                    	p2r=false;
+                    break;
+                    case SDLK_q:
+
+                    	p2l=false;
+                    break;
+                }
+            }
+       
+	
+						
+
+	}
+	
+	}//END OF POLL EVENT LOOP
+	
+			
+		
+	 //MANETTE
+	 if ( manette==1) {
+        nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
+  					
+        if (nbytes > 0) {
+        	
+        		        
+            buffer[nbytes] = '\0';  // Null-terminate the string
+            printf("Arduino: %s\n", buffer);
+							
+            
+
+							if ( strstr(buffer,"pin 3") ) {
+										right=true;
+										left=false;
+										jump=false;
+							} 
+								
+								if (strstr(buffer, "pin 7")) {
+								right=false;
+								left=false;
+								if (player.textcourant < 5) {
+            player.textcourant = 10;
+            jumpPerso(&player, 1);
+        } else {
+            player.textcourant = 12;
+            jumpPerso(&player, -1);
+        }
+        
+    time(&jump_start_time);
+    printf("Jump started at: %ld\n", jump_start_time);
+}
+
+
+if (jump_start_time != 0) {
+
+    time(&current_time);
+
+
+    elapsed_jump = difftime(current_time, jump_start_time);
+
+
+
+    if (elapsed_jump >= 0.1) {
+
+        player.posinit.y = ground;
+        printf("Player returned to ground\n");
+        jump_start_time = 0;
+        
+    } 
+}
+							
+								
+								
+							if ( strstr(buffer,"pin 13")) {
+								left=true;	
+								right=false;
+								jump=false;
+
+							}
+							
+							
+							
+           
+        }
+     
+        usleep(1);  
+    //
+}
+    
 	//GESTIN MOVEMENT ET SCROLLING BACKGROUND
 				if (right ) {
 				
-			score+=3;
+			player.score+=3;
 			deplacerPerso(&player,1,&currenttext);
 
 			
 		}
 		
 		if (left) {
-			score-=1;
+			player.score-=1;
 			deplacerPerso(&player,-1,&currenttext);
 			}
-	if (player.posinit.x >= SCREEN_WIDTH/ 4 ) {   
-	   player.posinit.x= SCREEN_WIDTH/4 ;   
-       scrollingHorizontal(&TabBack[indlvl-1], 7);			
+			if (player.slide==1  && right) {
+					Mix_PlayChannel(-1,slideSFX,0);
+					bgscrolling++;
+					right=false;
+
+					player.textcourant=15;	
+					player.posinit.y=500;
+					
+			} 
+				
+					
+			
+	if (player.posinit.x >= 350 ) {   
+	   player.posinit.x= 350 ;   
+       scrollingHorizontal(&TabBack[indlvl-1], bgscrolling);			
        	}
+    if( player.slide ==1) {
+    													player.energy--;
+    													
+    }
+       	
+       	
+       	if( player.energy > 100) {player.energy=100;}
+       	if ( player.energy < 0 ) {player.energy=0;}
+       	if ( player.energy < 25 && player.slide==1) {player.posinit.y =ground ; player.textcourant =10;player.slide=0; jumpPerso(&player,1);}
+      	
+      	
+     if ( player.shoot) {
+     		poslazer.x+=50;
+     		poslazer.y++;
+     			if ( poslazer.x > 1920 ) {poslazer.x=player.posinit.x;player.shoot=false;poslazer.y=player.posinit.y;}
+     		
+     }
+     		
+     		if ( num_j==2) {
+     			if (p1u ) {p1.posinit.y-=10; p1d=false;p1l=false;p1r=false;p1.frame = (p1.frame + 1) % NUM_FRAMES;}
+        		if (p1d){p1.posinit.y+=10;p1.frame = (p1.frame + 1) % NUM_FRAMES;}
+        		if(p1r){p1.posinit.x+=10;p1.frame = (p1.frame + 1) % NUM_FRAMES;}
+        		if(p1l) {p1.posinit.x-=10;p1.frame = (p1.frame + 1) % NUM_FRAMES;}
+        		
+        		if (p2u ) {p2.posinit.y-=10;p2.frame = (p2.frame + 1) % NUM_FRAMES;}
+        		if (p2d){p2.posinit.y+=10;p2.frame = (p2.frame + 1) % NUM_FRAMES;}
+        		if(p2r){p2.posinit.x+=10;p2.frame = (p2.frame + 1) % NUM_FRAMES;}
+        		if(p2l) {p2.posinit.x-=10;p2.frame = (p2.frame + 1) % NUM_FRAMES;}
+        		
+        		
+        		
+
+     					/*if ( p1.posinit.y > 1080 / 2) {
+     							scrollingVertical(&bg2,5);
+     							p1.posinit.y = 1080 / 2;
+     					}
+
+     					   
+     					if ( p2.posinit.y > 1080 / 2) {
+     							scrollingVertical(&bg1,4);
+     							p2.posinit.y = 1080/2;
+     					}*/
+
+     					if ( p1.posinit.x < SCREEN_WIDTH/2) {
+					
+					p1.posinit.x = SCREEN_WIDTH/2;
+					}
+						if ( p2.posinit.x > SCREEN_WIDTH/2) {
+					
+					p2.posinit.x = SCREEN_WIDTH/2  ;
+					}
+     					
+     					
+     	
+     		}
+
        	
 			 /////////////////////////////////////////////      
        		
@@ -663,37 +1324,78 @@ if (optionmenu==true ){
 		 
 			time_t currentTime = time(NULL);
        if (currentTime - lastDamageTime >= DAMAGE_COOLDOWN) {
-            int collisionType = Collided(player, poses);
+            int collisionType = Collided(player.posinit,TabEnt[EntityToShow].pos);
+         
             switch (collisionType) {
                 case 1:
-
+											if ( player.slide==0) {
                     if (sfClick == false) {
                         Mix_PlayChannel(-1, dmgSFX, 0);
                     }
 
                     player.textcourant = 14;
-                    score -= 10;
+                    player.score -= 10;
                     if (player.num_hearts != 0) {
                         player.num_hearts--;
                     }
                     lastDamageTime = currentTime;
+                    EntityToShow = rand() % 3 ;
+                    } else {
+                    			 TabEnt[EntityToShow].pos.x=1920;
+									EntityToShow = rand() % 3 ;
+									player.score+=100;
+                    			
+                    }
                     break;
                 case 2:
-                    poses.x = 1920;
+                TabEnt[EntityToShow].pos.x=1920;
+									EntityToShow = rand() % 3 ;
+									player.score+=100;
+								
                     break;
                 default:
 
                     break;
             }
-        }
-        
-        HandleCollision_Player_Bonus(&player,&posCoin,&score,CoinSFX);
+            		
+            
+            
+        }if ( Collided(spider.pos,player.posinit) == 1  && player.slide==0){
+
+												spider.dx=15;
+												player.textcourant=14;
+													if( player.num_hearts !=0 ) {
+												player.num_hearts--;
+											}
+											spider.dx=-5;
+											
+				}  else if (Collided(spider.pos,player.posinit) == 1 &&  player.slide==1) {
+																									spider.dx=-5;
+																									player.score+=125;
+																				}
+													if ( spider.pos.x >= 1960) {
+																spider.dx=5;
+														}
+														
+				if ( Collided (spider.pos,poslazer) ==1 ) {spider.dx=-5;
+																									player.score+=125;
+																				
+													if ( spider.pos.x >= 1960) {
+																spider.dx=5;
+														}}
+				
+																				
 			
+																					
+        if ( num_j==1) {
+        HandleCollision_Player_Bonus(&player,&heart_collect.pos,&player.score,CoinSFX);
+    }
+        
 	if ( player.num_hearts < 1 ) {
 	player.num_hearts=1;
-	poses.x+=10;
 
-	printf("Game Over\n");
+
+
 	gameover=true;
 
 		}
@@ -716,12 +1418,12 @@ if (gameover==true) {
 						lst=true;
 						Mix_ResumeMusic();		
 						Mix_PlayMusic(themelvl1,-1);
-						printf("YES \n");
+
 						poses.x=1600;
 						player.posinit.x = 100;
 						player.num_hearts=3;
 
-						score=0;
+						player.score=0;
 						lvl1=true;
 						gameover=false;
 					break;						
@@ -730,16 +1432,49 @@ if (gameover==true) {
 						playS=false;
 						gameover=false;
 						mainmenu=true;
-
+						
 						Mix_PlayMusic(musicmenu,-1);
 					break;
 					}
 				break;
 		}
+		/*if (strstr(buffer,"pin 3")){
+			Playing=false;
+						playS=false;
+						gameover=false;
+						mainmenu=true;
+
+						Mix_PlayMusic(musicmenu,-1);
+	}
+	
+	
+	if (strstr(buffer,"pin 13" )){
+			lst=true;
+						Mix_ResumeMusic();		
+						Mix_PlayMusic(themelvl1,-1);
+
+						poses.x=1600;
+						player.posinit.x = 100;
+						player.num_hearts=3;
+
+						score=0;
+						lvl1=true;
+						gameover=false;
+	
+	
+	}*/
+		
 }
 
 
-	if ( indlvl==1 && ( score >  400 && score < 550)) { //GESTION TIC TAC TOE
+
+	if ( indlvl==1  && num_j==1) { //GESTION TIC TAC TOE
+				time(&current_time);
+					                double elapsed_time = difftime(current_time, level_start_time);
+					                	
+					                if (elapsed_time >= 35) {
+			
+			
 							ttc=true;
 
 					do {
@@ -799,7 +1534,7 @@ if (gameover==true) {
 								if (atilganger(t.tab)  !=0 ) {
 									 tcc_won=true;
 										ttc=false;
-										score+=700;
+										player.score+=700;
 										
 									}
 									
@@ -891,27 +1626,134 @@ if (gameover==true) {
 										playS=true;
 					
 				}
+					} 
 					}
 					
-					
-					
-				/*if ( indlvl==2 && ( autre condition )) {
-				}*/
+
+				if ( indlvl==2 ) {  // lvl 2
+							time(&current_time);
+					                double elapsed_time = difftime(current_time, level_start_time);
+					                
+					                if (elapsed_time >= 8 && elapsed_time <=14 ) {
+																			Flash_collect.active=true;
+																								 if ( HandleCollision_Player_Bonus(&player,&Flash_collect.pos,&player.score,CoinSFX) == 1) {Flash_collect.active=false;collected=1;}				
+					                }
+					                
+					                if ( elapsed_time >= 25 && elapsed_time <= 30) {
+					                	CD_collect.active=true;
+																								 if ( HandleCollision_Player_Bonus(&player,&CD_collect.pos,&player.score,CoinSFX) == 1) {CD_collect.active=false;collected=2;}			
+					                	
+					                	}
+					                	
+					                	
+					           if ( collected>=2 ) {
+					           
+					           																					Pass_to_Next_Level(Loading, ecran, &nxtlvlSFX,&player,TabBack , indlvl);
+					           																					collected=0;
+					           																					Playing=false;
+					           																					playS=true;
+					           }
+					           
+					                	
+							        				 
+							        		
+											
+				}
 				
-				
-				if ( indlvl==3 && ( score > 300 && score < 450)) {
-							     if ( enigme_play(ecran) == 0 ) { // mauvaise reponse
+
+				if ( indlvl==3 ) {
+				time(&current_time);
+					                double elapsed_time = difftime(current_time, level_start_time);
+					                if (elapsed_time >= 50 && elapsed_time <= 100) {
+					                benig=true;
+					                }
+					               if ( benig){
+					                
+
+    e.num_enigme = -1;
+    int r = 0;
+    int running = 1; // Le jeu est initialement en cours d'exécution
+    int boucle = 1; // Boucle principale du jeu
+    char cc[30] = "0";
+    text tt;
+
+    init_enigme(&e);
+    initexte(&tt);
+		//e.img=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/img/enigme1-1.jpg");
+		
+while ( running){
+       SDL_BlitSurface(e.img, NULL, ecran, &e.p);
+        //SDL_Flip(ecran);
+
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+           
+
+            case SDL_KEYDOWN:
+                /*if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    boucle = 0; // Quitter la boucle sur ESC
+                    break;
+                }*/
+                
+                switch (event.key.keysym.sym) {
+                case SDLK_a:
+                    r = 1;
+                    running = 0; // Indiquer que le jeu doit arrêter après résultat
+                    break;
+                case SDLK_z:
+                    r = 2;
+                    running = 0;
+                    break;
+                case SDLK_e:
+                    r = 3;
+                    running = 0;
+                    break;
+                case SDLK_r:
+                    r = 4;
+                    running = 0;
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+       
+       }
+
+         if (running == 0) {
+         	       afficher_resultat(ecran, e.reponsevrai, r, &e);
+         	       running=1;
+     
+
+           }
+            if ( r != e.reponsevrai ) { // mauvaise reponse
+            			
+            					//running=1;
+													Playing=false;
 													gameover = true;
-													score += 500;
+													player.score += 500;
 																				
-				} else {
-																			Pass_to_Next_Level(Loading, ecran, &nxtlvlSFX,&player,TabBack , indlvl);
-																			mainmenu=true;
+									} else {
+												//		running=1;
+													Playing=false;
+
+													Pass_to_Next_Level(Loading, ecran, &nxtlvlSFX,&player,TabBack , indlvl);
+													//mainmenu=true;
+														playS=true;					
 					}
+
+
+        //}
+    
+							     
 					
 				
 				
 				}
+				}
+				
+				
 				
 				
 				
@@ -946,19 +1788,19 @@ if (gameover==true) {
 			
 			//SAUVEGARDE DU SCORE
 			
-			if ( sauvegarde_score(score,"score.txt") == false ) {
+			if ( sauvegarde_score(player.score,"score.txt") == false ) {
 				printf("ERROR SAVING SCORE \n");
 			} else {
-				printf("SCORE SAVED \n");
+				printf("=========Score saved=========\n");
 			}
 			//HIGHEST_SCORE
 			
-			Uint32	highest_score;
+			int	highest_score;
 			highest_score=best_score("score.txt");
 			if ( best_score == 0 ) {
 					printf("ERROR LOADING HIGHEST SCORE \n");
 			}else {
-				printf("HIGHEST SCORE : %u \n",highest_score);
+				printf("=========Highest Score:%u\n=========",highest_score);
 			}
 			
 			
@@ -968,7 +1810,7 @@ if (gameover==true) {
 			
 		//LIBERATION 
 
-	for( int p=0 ; p < 14 ; p++) {
+	for( int p=0 ; p < 16 ; p++) {
 		SDL_FreeSurface(player.texture[p]);
 		}
 		for ( int s=0 ; s < 3 ; s++) {
@@ -1001,14 +1843,43 @@ if (gameover==true) {
             Loading[i] = NULL;
         }
     }
-
+		for ( int i=0 ; i < 3 ; i++) {SDL_FreeSurface(TabEnt[i].texture);}
+		SDL_FreeSurface(heart_collect.texture);
+		SDL_FreeSurface(Flash_collect.texture);
+		SDL_FreeSurface(CD_collect.texture);		
 
 
     
 
 	SDL_FreeSurface(Gameover);
 
-
+SDL_FreeSurface(e.img);
+    for (int i = 0; i < 10; i++) {
+        SDL_FreeSurface(e.timer[i]);
+    }
+    for (int dir = 0; dir < NUM_DIRECTIONS; ++dir) {
+        for (int frame = 0; frame < NUM_FRAMES; ++frame) {
+            SDL_FreeSurface(p1.sprite[dir][frame]);
+        }
+    }
+    SDL_FreeSurface(p1.spriteSheet);
+   	for ( int i=0 ; i < 4 ; i++) {
+   			SDL_FreeSurface(TabCutscene[i]);
+   	}
+   	SDL_FreeSurface(DotP1.texture);
+   	SDL_FreeSurface(DotP2.texture);
+   	SDL_FreeSurface(SurfTime_P1);
+   	SDL_FreeSurface(SurfTime_P2);
+   	SDL_FreeSurface(SurfText_P1);
+   	SDL_FreeSurface(SurfText_P2);
+    SDL_FreeSurface(e.res);
+    SDL_FreeSurface(m1.img_map);
+    SDL_FreeSurface(m2.img_map);
+    SDL_FreeSurface(m3.img_map);
+    SDL_FreeSurface(m1.img_es);
+    SDL_FreeSurface(m2.img_es);
+    SDL_FreeSurface(m3.img_es);
+    SDL_FreeSurface(lazer);
     SDL_FreeSurface(ecran);
     SDL_FreeSurface(imgmenu);
     SDL_FreeSurface(backg);
@@ -1032,7 +1903,10 @@ if (gameover==true) {
     TTF_Quit();
     SDL_Quit();
     
-    
+    if ( manette !=0 ) {
+     close(arduino_fd);
+    }
+    printf("=========Execution complete=========\n");
 return 0;
 }
 

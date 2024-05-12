@@ -10,6 +10,10 @@
 #include <math.h>
 #define ground 500
 
+#define SPRITE_WIDTH 34
+#define SPRITE_HEIGHT 34
+#define NUM_FRAMES 3
+#define NUM_DIRECTIONS 4 
 
 
 
@@ -19,7 +23,7 @@
 typedef struct {
 	
 	SDL_Rect posinit;
-	SDL_Surface* texture[15];
+	SDL_Surface* texture[16];
 	int textcourant;
 	// proprietes 
 	int num_hearts;
@@ -28,7 +32,19 @@ typedef struct {
 	double acc;
 	SDL_Surface * dmg;
 	int dx;
-
+	int slide;
+	int energy;
+	bool shoot;
+	int score;
+	// 2 eme joueur minijeu
+	SDL_Surface *sprite[NUM_DIRECTIONS][NUM_FRAMES];
+	int frame;
+	int direction;
+	int health;
+	///
+	SDL_Surface *spriteSheet;
+    SDL_Rect frameClips[NUM_DIRECTIONS][NUM_FRAMES];
+	
 }Person;
 
 
@@ -43,23 +59,28 @@ void afficher_score(int score ,  SDL_Rect * PosTxt, SDL_Surface ** SurfText , TT
 
 
 
-typedef struct {
-	SDL_Rect posarr;
-	SDL_Surface * back[3];
-	int indback;
-} Backg;
 
 
-Backg initbackground(Backg  Back);
+
 //TEST POUR TACHE COLLISION
+
+typedef struct {
+		SDL_Surface * texture;
+		SDL_Rect pos;
+		bool active;
+		int dx;
+
+}Entity;
+
+
 int InitES(SDL_Surface **ES, SDL_Surface **Coin,  char* cheminES, char *cheminCoin, SDL_Rect *poses , SDL_Rect * posCoin);
-void afficherES(SDL_Surface *screen, SDL_Surface *ES, SDL_Surface *Coin, SDL_Rect poses_ES, SDL_Rect poses_Coin);
+//void afficherES(SDL_Surface *screen, SDL_Surface *ES, SDL_Surface *Coin, SDL_Rect poses_ES, SDL_Rect poses_Coin);
 
-int Collided(Person p , SDL_Rect poses); // 1 Player damaged , 2 Es damaged
+int Collided(SDL_Rect p , SDL_Rect poses); // 1 Player damaged , 2 Es damaged
 
+Entity InitEntity(char* chemin,int x , int y,int dx);
 
-
- 
+ int CollisionTrigo(SDL_Rect C, Person P);
 
  
  	
