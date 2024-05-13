@@ -366,21 +366,23 @@ if (manette ==1) {
 		SDL_Rect PLAYER2_ZONE = {0, 0, 960, 1080};
 		SDL_Rect PLAYER1_ZONE = {960, 0, 960, 1080};
 		Background bg1, bg2;
-		initBackground(&bg1, ecran,"white.jpg","/home/aziz/Desktop/Digital_Intrusion/lvl1img2.png");
-   		initBackground(&bg2, ecran,"black.jpg","/home/aziz/Desktop/Digital_Intrusion/lvl1img2.png");    
+		initBackground(&bg1, ecran,"bg1.png","lvl1img2.png");
+   		initBackground(&bg2, ecran,"bg1.png","lvl1img2.png");    
 		Person p1;
-	p1.posinit.x=1060;
-	p1.posinit.y=100;
+	p1.posinit.x=1380;
+	p1.posinit.y=540;
 	Person p2;
-	p2.posinit.x=100;
-	p2.posinit.y=100;
+	p2.posinit.x=480;
+	p2.posinit.y=540;
 	p1.score=0;
+	SDL_Rect PlaySpace1 = {1130,170 , 627 , 733};
+	SDL_Rect PlaySpace2 = {170 , 170 ,627 , 733 };
 	loadPlayerSpriteSheet(&p1, "yosri.png");
  loadPlayerSpriteSheet(&p2, "emna.png");					
  bool p1r=false,p1l=false,p1u=false,p1d=false;
 bool p2r=false,p2l=false,p2u=false,p2d=false;
       SDL_Rect PosScoreP2 = {1750,20,50,50};
-Uint32 moveInterval = 3000;  // 1 SECONDE		
+Uint32 moveInterval = 5000;  // 1 SECONDE		
 		Uint32 lastMoveTime_P1,lastMoveTime_P2;
 						 lastMoveTime_P1 = SDL_GetTicks();
 						 lastMoveTime_P2 = SDL_GetTicks();
@@ -691,8 +693,8 @@ if (optionmenu==true ){
 		
 
 
-			if ( playS ) {	
-						
+			if ( playS) {
+				if ( num_j==2 ) {indlvl=1;Playing=true;playS=false;}	
 					SDL_BlitSurface(seleclevel,NULL,ecran,&posimg);
 					while ( SDL_PollEvent(&event)){
 						switch(event.type) {
@@ -728,6 +730,7 @@ if (optionmenu==true ){
 								}
 							}
 							}
+					
 						
 	
 							if ( manette==1) {
@@ -874,12 +877,12 @@ playS=false;
 						        Uint32 currentTime_P1 = SDL_GetTicks();
 						    	Uint32 currentTime_P2 = SDL_GetTicks();
 						    	printf("TIME %d ", currentTime_P1/1000);
-			 	SDL_BlitSurface(bg1.image, &PLAYER1_ZONE, ecran, &PLAYER1_ZONE);
-			 	SDL_BlitSurface(bg2.image, &PLAYER2_ZONE, ecran, &PLAYER2_ZONE);
+			 	SDL_BlitSurface(bg1.image, NULL, ecran, &PLAYER1_ZONE);
+			 	SDL_BlitSurface(bg2.image, NULL, ecran, &PLAYER2_ZONE);
         		renderPlayerFrame(&p1, ecran,font);
         		renderPlayerFrame(&p2,ecran,font);
-        		Deplacer_ET_NON_COLLISION(&p1, &DotP1, PLAYER1_ZONE, &lastMoveTime_P1, currentTime_P1, moveInterval);
-				Deplacer_ET_NON_COLLISION(&p2, &DotP2, PLAYER2_ZONE, &lastMoveTime_P2, currentTime_P2, moveInterval);
+        		Deplacer_ET_NON_COLLISION(&p1, &DotP1, PlaySpace1, &lastMoveTime_P1, currentTime_P1, moveInterval);
+				Deplacer_ET_NON_COLLISION(&p2, &DotP2, PlaySpace2, &lastMoveTime_P2, currentTime_P2, moveInterval);
         		afficherES(ecran,DotP1);
 				afficherES(ecran,DotP2);
 				
@@ -891,7 +894,7 @@ playS=false;
       afficher_score(p2.score,&PosTxt,&SurfText_P1 ,font ,txtCoul );
       SDL_BlitSurface(SurfText_P1,NULL,ecran,&PosTxt);
       SDL_BlitSurface(SurfText_P2,NULL,ecran,&PosScoreP2);
-      if ( timer(currentTime_P1 ,font, PosVie_P1,ecran) == 0) {printf("OVER\n");}
+      if ( timer(currentTime_P1 ,font, PosVie_P1,ecran) == 0) {printf("Over \n");}
 
         SDL_Flip(ecran); // Update screen
         SDL_Delay(60); // Adjust frame rate

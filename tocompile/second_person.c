@@ -76,7 +76,31 @@ void deplacerEntite_MULTIJOUEUR(Person P, Entity *Dot, SDL_Rect playZone) {
     if ( Dot -> pos.x > maxX) {Dot->pos.x = maxX - 100;}
     if ( Dot->pos.y > maxY) {Dot->pos.y = maxY - 100;}
 }
+bool checkCollision(SDL_Rect playerRect, SDL_Rect circleRect) {
+    // Calculate the center of the player rectangle
+    int playerCenterX = playerRect.x + playerRect.w / 2;
+    int playerCenterY = playerRect.y + playerRect.h / 2;
 
+    // Calculate the center of the circle rectangle
+    int circleCenterX = circleRect.x + circleRect.w / 2;
+    int circleCenterY = circleRect.y + circleRect.h / 2;
+
+    // Calculate the distance between the centers of the player and the circle
+    int distanceX = abs(playerCenterX - circleCenterX);
+    int distanceY = abs(playerCenterY - circleCenterY);
+
+    // Calculate the half-widths and half-heights of the player and the circle
+    int playerHalfWidth = playerRect.w / 2;
+    int playerHalfHeight = playerRect.h / 2;
+    int circleHalfWidth = circleRect.w / 2;
+    int circleHalfHeight = circleRect.h / 2;
+
+    // Check if the distance between the centers is less than the sum of the half-widths and half-heights
+    bool collisionX = distanceX <= (playerHalfWidth + circleHalfWidth);
+    bool collisionY = distanceY <= (playerHalfHeight + circleHalfHeight);
+
+    return collisionX && collisionY;
+}
 
 
 
@@ -103,7 +127,7 @@ void Deplacer_ET_NON_COLLISION(Person *P, Entity *Dot, SDL_Rect PlayZone, Uint32
     }
 
     // Check for collision
-    if (!collisionOccurred && CollisionTrigo(Dot->pos, *P) == 1) {
+    if (!collisionOccurred && checkCollision(P->posinit,Dot->pos) == 1) {
         P->score++;
         printf("COLLIDED \n");
         deplacerEntite_MULTIJOUEUR(*P, Dot, PlayZone);
@@ -122,8 +146,31 @@ int timer(Uint32 Time , TTF_Font * font , SDL_Rect PosVie, SDL_Surface * ecran) 
         SDL_Color txtCoul={255,0,255};
         SurfTime = TTF_RenderText_Solid(font,CTime,txtCoul);
         SDL_BlitSurface(SurfTime,NULL,ecran,&PosVie);
-
-
+        
 }
 
 
+void handleMPGameState (int scoreP1 , int scoreP2 , SDL_Rect PlayerZone_1 , SDL_Rect PlayerZone_2 , SDL_Surface * ecran,  bool * mainmenu) {
+    SDL_Rect PosWinner,PosLoser;
+    SDL_Surface * Winner , *loser;
+    Winner = IMG_Load("");
+    loser = IMG_Load("");
+    
+        if (!Winner || !loser) {
+                printf("ERROR LOADING WINNER OR LOSER PHOTO\n");
+        }
+
+    PosWinner = scoreP1 > scoreP2 ? PlayerZone_1 : PlayerZone_2;
+    PosLoser = scoreP1 > scoreP2 ? PlayerZone_2 : PlayerZone_1;
+
+    SDL_BlitSurface(Winner , NULL,ecran,&PosWinner);
+    SDL_BlitSurface(loser,NULL,ecran,&PosLoser);
+    SDL_Flip(ecran);
+ Uint32 start_time = SDL_GetTicks();
+
+    while (SDL_GetTicks() - start_time < 3000) {
+    }
+        *mainmenu = true;
+
+
+}
