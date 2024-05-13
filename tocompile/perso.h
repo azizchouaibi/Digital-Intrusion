@@ -69,7 +69,7 @@ typedef struct {
 		SDL_Rect pos;
 		bool active;
 		int dx;
-
+		int health;
 }Entity;
 
 

@@ -315,213 +315,6 @@ int i;
 return tabs;
 }
 
-/*void loadoptions(SDL_Surface *ecran, SDL_Surface * backg, SDL_Rect posopt) {
-	SDL_Event even;
-	int i,compt; bool test=true;
-	compt =1;
-	int son=0;
-	Button btn[8];
-	for (i=0; i<8;i++) {
-		btn[i].img[0]=NULL;
-		btn[i].img[1]=NULL;
-	}
-	backg=IMG_Load("ts_opt/op1.png");
-
-	if ( backg==NULL) {
-		printf("ERROR LOADING OPTIONS BACKGROUND \n"); 
-	} else {
-		printf("OKay \n");
-		posopt.x=0;
-		posopt.y=0;
-		posopt.w=backg->w;
-		posopt.h=backg->h;
-		SDL_BlitSurface(backg,NULL,ecran,&posopt);
-		btn[0].img[1]=IMG_Load("ts_opt/off.png");
-			if (btn[0].img[1]==NULL) {
-				printf("ERREUR 1");
-			} else {
-				printf("SUCCES ");
-			}
-				printf("OKay \n");
-		btn[1].img[1]=IMG_Load("ts_opt/foo.png");
-			if ( btn[1].img[1] ==NULL) {
-				printf("ERROR 2");
-			}else {
-				printf("SUCCES ");
-			}
-				printf("OKay \n");
-		btn[4].img[1]=IMG_Load("ts_opt/full1.png");
-			if ( btn[4].img[1]==NULL) {
-				printf("ERROR 3");
-			}else {
-				printf("SUCCES ");
-			}
-				printf("OKay \n");
-		btn[5].img[1]=IMG_Load("ts_opt/win1.png");
-			if ( btn[5].img[1]==NULL) {
-				printf("ERROR 4");
-			}else {
-				printf("SUCCES ");
-			}
-				printf("OKay \n");
-		btn[6].img[0]=IMG_Load("ts_opt/4.png");
-			if ( btn[6].img[0]==NULL) {
-				printf("ERROR 5");
-			}else {
-				printf("SUCCES ");
-			}
-			printf("OKay \n");
-			
-		// initialisation des positions des boutons : 
-		
-		btn[0].pos.x=1118; // MUSIC OFF/ on
-		btn[0].pos.y=416;
-		btn[0].pos.w=btn[0].img[1]->w;
-		btn[0].pos.h=btn[0].img[1]->h;
-				printf("OKay \n");
-		btn[1].pos.x=1118; // SFX OFF OU ON
-		btn[1].pos.y=987;
-			printf("OKay \n");
-		btn[1].pos.w=btn[1].img[1]->w;
-		btn[1].pos.h=btn[1].img[1]->h;
-			printf("OKay \n");
-		btn[2].pos.x=1335; // Flech droite mta3 el sout
-		btn[2].pos.y=713;
-		btn[2].pos.w=80;
-		btn[2].pos.h=80;	
-			printf("OKay \n");
-		btn[3].pos.x=591;
-		btn[3].pos.y=713; // fleche gauche mta3 el sout
-		btn[3].pos.w=80;
-		btn[3].pos.h=80;
-			printf("OKay \n");
-		
-		btn[4].pos.x=492; // button fullscreen
-		btn[4].pos.y=834;
-		btn[4].pos.w=btn[4].img[1]->w;
-		btn[4].pos.h=btn[4].img[1]->h;
-		printf("%d\t %d\t %d\t %d\t ",btn[4].pos.w,btn[4].pos.h,btn[4].pos.x,btn[4].pos.y);
-			printf("OKay \n");
-		btn[5].pos.x=1129; // button windowed
-		btn[5].pos.y=834;
-		btn[5].pos.w=btn[5].img[1]->w;
-		btn[5].pos.h=btn[5].img[1]->h;
-			printf("OKay \n");
-		btn[6].pos.x=621; // el slider mt3 el sout
-		btn[6].pos.y=718;
-		btn[6].pos.w=btn[6].img[0]->w;
-		btn[6].pos.h=btn[6].img[0]->h;
-			printf("OKay \n");
-
-
-			printf(" POLLING EVENTS\n");
-			
-		switch (even.type) {
-			printf("EVENT ACCESSED \n");
-			
-			case SDL_MOUSEMOTION:
-
-			printf("ACCESSED MOUSE MOTION \n");
-			
-		if  (even.motion.x >= 492 && even.motion.x <= 492+btn[4].pos.w && 
-	even.motion.y >=834 && even.motion.y <= 834 + btn[6].pos.h) {
-			printf("OKay  in pos\n");
-			SDL_BlitSurface(btn[4].img[1],NULL,ecran,&btn[4].pos);
-		} else {
-			printf("SOURIS NOT IN POS \n");
-		}
-		
-			printf("OKay \n");
-		if (sourisSurbtn(btn[5].pos,even)&& btn[5].img[1]!= NULL) {
-			printf("OKay  in pos 2\n");
-			SDL_BlitSurface(btn[5].img[1],NULL,ecran,&btn[5].pos);
-		}
-		
-			printf("OKay \n");
-			break;
-			case SDL_MOUSEBUTTONDOWN:
-			// TEST SUR CLICK : 
-       	 		if (even.button.button == SDL_BUTTON_LEFT) {
-       	 		printf("click");
-       	 		
-				if (even.motion.x >= 492 && even.motion.x <= 492+btn[6].pos.w && 
-	even.motion.y >=718 && even.motion.y <= 718 + btn[6].pos.h) {
-				printf("Music off\n");
-				
-					SDL_BlitSurface(btn[0].img[1],NULL,ecran,&btn[0].pos);
-					
-					
-					} 
-					else if ( sourisSurbtn(btn[1].pos,even)) {
-					printf("SFX OFF\n");
-						SDL_BlitSurface(btn[1].img[1],NULL,ecran,&btn[1].pos);
-						
-					}
-					else if (sourisSurbtn(btn[2].pos,even)) {
-					printf("SON ++\n");
-					
-						if ( compt<4 &&  son <=100) {
-							compt++;
-							son +=25;
-						} 
-							
-					}
-					else if (sourisSurbtn(btn[3].pos,even)) {
-					printf("SON --\n");
-					
-						if ( compt >= 4 && son >=0) {
-							compt--;
-							son-=25;
-					}
-					}
-					else if (sourisSurbtn(btn[4].pos,even)) {
-						//fullscreen
-						
-						printf("FULLSCREEN\n");
-					}
-					else if (sourisSurbtn(btn[5].pos,even)) {
-						test = false;
-						//windowed
-						printf("WINDOWED\n");
-					
-					}
-					break;
-					
-					
-}
-}
-
-	printf("OKay \n");
-
-
-
-		
-
-}
-}
-
-/*void detectbtnopt(SDL_Rect pos1, SDL_Rect pos2, SDL_Rect fg, SDL_Rect fd , SDL_Rect win, SDL_Rect full, SDL_Event event , SDL_Surface *bn1 , SDL_Surface * bn2, SDL_Surface *bn3 , SDL_Surface * bn4 , SDL_Surface * bn5 , SDL_Surface *bn6, SDL_Surface *ecran ) {
-
-	if (event.motion.x >= pos1.x && event.motion.x <= pos1.x+pos1.w && 
-	event.motion.y >=pos1.y && event.motion.y <= pos1.y + pos1.h) {
-		SDL_BlitSurface(bn1,NULL,ecran,&pos1);
-	
-
-
-
-
-
-/*void hover(SDL_Rect posbtn, char chemin1[100] , char chemin0[100], SDL_Event event,SDL_Surface *ecran) {
-	SDL_Surface *hov,*nonhov;
-	hov = IMG_Load(chemin1);
-	nonhov=IMG_Load(chemin0);
-	
-	if (sourisSurbtn(posbtn,event) ==true ) {
-		SDL_BlitSurface(hov,NULL,ecran,&posbtn);
-	}else {
-		SDL_BlitSurface(nonhov,NULL,ecran,&posbtn);
-	}
-}*/
 
 
 bool backspace(SDL_Event event ) {
@@ -605,38 +398,7 @@ SDL_BlitSurface(SurfText,NULL,ecran,&postxtEcran);
 }
 
 
-			
-/*void Pass_to_Next_Level( SDL_Surface * Loading[3] ,  SDL_Surface *ecran , Mix_Chunk ** SFX , Person *p , Background * TabBack[3] , int indlvl ) {		
-Loading[0]= IMG_Load("for ts/lo.png");
-Loading[1]=IMG_Load("for ts/lod2.png");
-Loading[2]=IMG_Load("for ts/lod3.png");
-int i;
-	 if (!Loading[0] || !Loading[1] || !Loading[2]) {
-        printf("ERROR LOADING NEXT LEVEL TRANSITION IMAGE\n");
 
-        return;
-    }
-	*SFX=Mix_LoadWAV("nxtlvlSFX.wav");
-	if  ( !(*SFX)) {
-			printf("ERROR LOADING NEXT LEVEL TRANSITION AUDIO");
-			return ;
-		}
-		Mix_PlayChannel(-1,*SFX,0);
-		for ( i = 0 ; i < 12 ; i++) {
-			SDL_BlitSurface(Loading[i % 3 ],NULL,ecran,NULL);
-			SDL_Flip(ecran);
-			SDL_Delay(90);
-			}
-			
-			p->num_hearts=3;
-			p->posinit.x=200;
-			p->posinit.y=500;
-		TabBack[indlvl-1]->camera_pos.x = 0;
-    TabBack[indlvl-1]->camera_pos.y = 0;
-    TabBack[indlvl-1]->camera_pos.w = ecran->w;
-    TabBack[indlvl-1]->camera_pos.h = ecran->h;
-			SDL_Delay(1500);
-}*/
 void Pass_to_Next_Level(SDL_Surface *Loading[3], SDL_Surface *ecran, Mix_Chunk **SFX, Person *p, Background *TabBack[3], int indlvl) {
     // Load images
     Loading[0] = IMG_Load("for ts/lo.png");
@@ -701,11 +463,131 @@ void Pass_to_Next_Level(SDL_Surface *Loading[3], SDL_Surface *ecran, Mix_Chunk *
    
 }
 
+void InitCutscene( SDL_Surface ** Tab ) {
+    Tab[0]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p1.png");
+    Tab[1]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p2.png");
+    Tab[2]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p3.png");
+    Tab[3]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p4.png");
+
+        for ( int i = 0 ; i< 4 ; i++) {
+                if(Tab[i] == NULL) {
+                    printf("Error loading Cutscene image n %d\n",i);
+                }
+
+        }
+
+}
 
 
-	
-	
-	
+void handleGameLoss(SDL_Surface *ecran, bool *mainmenu, Mix_Music *MenuMusic) {
+    SDL_Surface *pic = IMG_Load("pic.png");
+    if (!pic) {
+        printf("ERROR LOADING GAME LOSS PICTURE");
+        return;
+    }
+
+    SDL_Surface *ThankYou = IMG_Load("thank_you_img.png");
+    if (!ThankYou) {
+        printf("ERROR LOADING THANK YOU \n");
+        return;
+    }
+
+    Mix_Chunk *lossSFX = Mix_LoadWAV("gameLossSFX.wav");
+    if (!lossSFX) {
+        printf("ERROR LOADING GAME LOSS SFX");
+        return;
+    }
+
+    SDL_BlitSurface(pic, NULL, ecran, NULL);
+    SDL_Flip(ecran);
+    Mix_HaltMusic();
+    Mix_PlayChannel(-1, lossSFX, 0);
+
+    Uint32 start_time = SDL_GetTicks();
+
+    while (SDL_GetTicks() - start_time < 6000) {
+    }
+
+    SDL_BlitSurface(ThankYou, NULL, ecran, NULL);
+    SDL_Flip(ecran);
+    start_time = SDL_GetTicks();
+
+    while (SDL_GetTicks() - start_time < 6000) {
+    }
+    Mix_ResumeMusic();
+    Mix_PlayMusic(MenuMusic, -1);
+
+    *mainmenu = true;
+}
+
+
+void handleGameMode(int * num_j ,SDL_Surface* ecran ) {
+	SDL_Surface * ChooseMode = IMG_Load("selec_game_mode.png");
+	SDL_Surface * Story0=IMG_Load("for ts/bt1.png");
+	SDL_Surface *Story1=IMG_Load("for ts/bt2.png");
+	SDL_Surface *MP0=IMG_Load("for ts/bt3.png");
+	SDL_Surface *MP1=IMG_Load("for ts/bt4.png");
+
+
+	SDL_Rect Story_Mode={450,450,Story0->w,Story0->h};
+	SDL_Rect Multiplayer_Mode={850,450,MP0->w,MP0->h};
+	bool PosSouris;
+		if ( !ChooseMode || !Story0 || !Story1 || !MP0 || ! MP1  ) {
+				printf("ERROR CHOOSING MODE \n");
+		}
+	 bool quit = false;
+    SDL_Event event;
+    SDL_BlitSurface(ChooseMode,NULL,ecran,NULL);
+    while (!quit) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                quit = true;
+            } else if (event.type == SDL_MOUSEMOTION) {
+                int mouseX = event.motion.x;
+                int mouseY = event.motion.y;
+
+                if (mouseX >= Story_Mode.x && mouseX <= Story_Mode.x + Story_Mode.w &&
+                    mouseY >= Story_Mode.y && mouseY <= Story_Mode.y + Story_Mode.h) {
+                    SDL_BlitSurface(Story1, NULL, ecran, &Story_Mode);
+                } else {
+                    SDL_BlitSurface(Story0, NULL, ecran, &Story_Mode);
+                }
+
+                if (mouseX >= Multiplayer_Mode.x && mouseX <= Multiplayer_Mode.x + Multiplayer_Mode.w &&
+                    mouseY >= Multiplayer_Mode.y && mouseY <= Multiplayer_Mode.y + Multiplayer_Mode.h) {
+                    SDL_BlitSurface(MP1, NULL, ecran, &Multiplayer_Mode);
+                } else {
+                    SDL_BlitSurface(MP0, NULL, ecran, &Multiplayer_Mode);
+                }
+            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                int mouseX = event.button.x;
+                int mouseY = event.button.y;
+
+                if (mouseX >= Story_Mode.x && mouseX <= Story_Mode.x + Story_Mode.w &&
+                    mouseY >= Story_Mode.y && mouseY <= Story_Mode.y + Story_Mode.h) {
+                    *num_j = 1;
+                    quit = true; 
+                }
+                
+                if (mouseX >= Multiplayer_Mode.x && mouseX <= Multiplayer_Mode.x + Multiplayer_Mode.w &&
+                    mouseY >= Multiplayer_Mode.y && mouseY <= Multiplayer_Mode.y + Multiplayer_Mode.h) {
+                    *num_j = 2;
+                    quit = true; 
+                }
+            }
+        }
+
+
+        SDL_Flip(ecran);
+    }
+SDL_FreeSurface(ChooseMode);
+SDL_FreeSurface(Story0);
+SDL_FreeSurface(Story1);
+SDL_FreeSurface(MP0);
+SDL_FreeSurface(MP1);
+}
+
+
 	
 	
 	

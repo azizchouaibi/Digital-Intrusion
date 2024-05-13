@@ -287,7 +287,7 @@ int HandleCollision_Player_Bonus (Person * p , SDL_Rect* C , int *score,Mix_Chun
         return; // Exit early if the delay period has not elapsed
     }
 
-    if (CollisionTrigo(*C, *p)) {
+    if (CollisionTrigo(*C, *p) != 0) {
     			Mix_PlayChannel(-1,CoinSFX,0);
         if (p->num_hearts < 3) {
             p->num_hearts++;

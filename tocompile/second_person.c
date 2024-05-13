@@ -7,7 +7,7 @@
 #define NUM_DIRECTIONS 4 
 #define dx 150
 #define dy 150
-#define  COLLISION_RESET_TIME 1000
+#define  COLLISION_RESET_TIME 3000
 
 void loadPlayerSpriteSheet(Person *p1, const char *filename, SDL_Surface *screen) {
     SDL_Surface *spriteSheet = IMG_Load(filename);
@@ -118,38 +118,12 @@ int timer(Uint32 Time , TTF_Font * font , SDL_Rect PosVie, SDL_Surface * ecran) 
         char CTime[3];
         SDL_Surface * SurfTime;
                 if ( time_in_s <= 0) {time_in_s = 0; return 0;}
-
-
-
-
-
-
-
         sprintf(CTime,"%d",time_in_s);
         SDL_Color txtCoul={255,0,255};
-
-
-
-
-
         SurfTime = TTF_RenderText_Solid(font,CTime,txtCoul);
-
         SDL_BlitSurface(SurfTime,NULL,ecran,&PosVie);
 
 
 }
 
-void InitCutscene( SDL_Surface ** Tab ) {
-    Tab[0]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p1.png");
-    Tab[1]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p2.png");
-    Tab[2]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p3.png");
-    Tab[3]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p4.png");
 
-        for ( int i = 0 ; i< 4 ; i++) {
-                if(Tab[i] == NULL) {
-                    printf("Error loading Cutscene image n %d\n",i);
-                }
-
-        }
-
-}

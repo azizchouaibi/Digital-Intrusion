@@ -15,17 +15,16 @@
 int main(){
 
 
-int num_j;
+int num_j=0;
 int manette;
 do {
-printf(" Joueurs ? \n");
-scanf("%d",&num_j);
+//printf(" Joueurs ? \n");
+//scanf("%d",&num_j);
 printf("Manette ?\n");
 scanf("%d",&manette);
-}while ( manette > 1 || manette < 0 || num_j > 2 || num_j < 0 );
+}while ( manette > 1 || manette < 0 /*|| num_j > 2 || num_j < 0*/ );
    // srand(time(NULL));
 				int collected=0;
-					                   enigme e;
 printf("=========STARTED=========\n");
 
 //VARIABLES GLOABLES
@@ -80,7 +79,7 @@ if (SDL_Init(SDL_INIT_EVERYTHING) !=0 ) {
 	SDL_Quit();
 } else {	
 	
-	ecran = SDL_SetVideoMode(1920,1080,32, /*SDL_FULLSCREEN|*/ SDL_HWSURFACE| SDL_DOUBLEBUF | SDL_SRCALPHA);
+	ecran = SDL_SetVideoMode(1920,1080,32, /*SDL_FULLSCREEN|*/ SDL_HWSURFACE| SDL_DOUBLEBUF | SDL_SRCALPHA | SDL_NOFRAME);
 	if (ecran== NULL) {
 		printf("ERROR CREATING WINDOW");
 	}
@@ -197,6 +196,17 @@ initTictactoe(&t);
 	initialiser_rotozoom(&z);
 bool tcc_won=false;
 ////////////////
+//VAR POUR ENIGME /////
+SDL_Color Color = {255, 255, 255};
+enig_fichier en;
+int resultat_fichier;
+init_enig_fichier(&en, Color);
+
+
+
+
+
+////
 Entity e1,e2,e3,CD_collect , Flash_collect , heart_collect,spider;
 Entity DotP1= InitEntity("mini_joueur.png",1000,400,0);
 Entity DotP2 = InitEntity("mini_es.png",0,0,0);
@@ -222,7 +232,8 @@ SDL_Surface *SurfEnergy	;
 SDL_Color energyCoul;
 SDL_Surface * TabCutscene[4];
 InitCutscene(TabCutscene);
-			int ind_cutscene=0;
+int ind_cutscene=0;
+bool cut_scene = false;
 
 
 /*SDL_Surface * es;
@@ -312,7 +323,6 @@ NOGO.y=933;
 NOGO.w=1198+182;
 NOGO.h=925+83;
 SDL_Surface * surft;
-												bool cut_scene = false;
 
 // FIN VARIABLE LEVEL 1
 //VAR ARDUINO 
@@ -356,8 +366,8 @@ if (manette ==1) {
 		SDL_Rect PLAYER2_ZONE = {0, 0, 960, 1080};
 		SDL_Rect PLAYER1_ZONE = {960, 0, 960, 1080};
 		Background bg1, bg2;
-		initBackground(&bg1, ecran,"mazem.png","/home/aziz/Desktop/Digital_Intrusion/lvl1img2.png");
-   		initBackground(&bg2, ecran,"mazem.png","/home/aziz/Desktop/Digital_Intrusion/lvl1img2.png");    
+		initBackground(&bg1, ecran,"white.jpg","/home/aziz/Desktop/Digital_Intrusion/lvl1img2.png");
+   		initBackground(&bg2, ecran,"black.jpg","/home/aziz/Desktop/Digital_Intrusion/lvl1img2.png");    
 		Person p1;
 	p1.posinit.x=1060;
 	p1.posinit.y=100;
@@ -389,6 +399,8 @@ SDL_Rect poslazer;
 	//bool player.shoot=false;
 	SDL_Rect camera = {0, 0, 1024, 768};
 while (gameloop) {
+			if (num_j==0) {handleGameMode(&num_j,ecran);}
+
 if ( manette ==1) {
 nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
 }
@@ -691,6 +703,7 @@ if (optionmenu==true ){
 										Playing=true;
 										playS=false;
 										cut_scene=true;
+
 										break;
 									case SDLK_KP2:
 										indlvl=2;
@@ -716,25 +729,7 @@ if (optionmenu==true ){
 							}
 							}
 						
-						
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
 							if ( manette==1) {
 							nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
 if ( nbytes >0) {
@@ -781,35 +776,43 @@ playS=false;
 
 				
 				if ( num_j==1) {
-					if (cut_scene) { // cut scene
+					if (cut_scene == true  && ind_cutscene <=3) { // cut scene
+						//if ( ind_cutscene <=3 ) {
 						SDL_BlitSurface(TabCutscene[ind_cutscene],NULL,ecran,NULL);
 
-						if ( ind_cutscene <= 3 ) {
 						while(SDL_PollEvent(&event)) {
 							switch(event.type) {
 							 	case SDL_KEYDOWN:
 							 		switch(event.key.keysym.sym) {
-							 		case SDLK_SPACE:
+							 		case SDLK_RIGHT:
 							 			if ( ind_cutscene < 3) {
 							 			ind_cutscene++;
+							 			break;
+							 		} 
+							 			cut_scene=false;
+							 		case SDLK_LEFT:
+							 			if ( ind_cutscene != 0 ) {
+							 			ind_cutscene--;
+							 			;
 							 		} else {
-							 				cut_scene=false;
 							 				ind_cutscene=0;
 							 		}
 							 		break;
+							 		
 							 		case SDLK_RETURN:
 							 			cut_scene=false;
-							 			ind_cutscene = 0;
+							 			ind_cutscene = 5;
 							 		break;
 
 							 		}
 							 	break;
 							}
 						}
-
+							player.score=0;
 							printf("IND CUTSCENE %d\n etat Cut %d\n",ind_cutscene,cut_scene);
 
-					}
+					//}
+					
 
 					} else {
 						PlPvPos = (SDL_Rect) player.posinit;
@@ -817,12 +820,14 @@ playS=false;
 			 TabMap[indlvl-1].pos_es =MAJMinimap(TabEnt[EntityToShow].pos, 10, TabBack[indlvl-1].camera_pos);
 				deplacerES(&TabEnt[EntityToShow],TabEnt[EntityToShow].dx);
 				deplacerCoin(&heart_collect,3);
+
 	       if (TabBack[indlvl-1].showing_main_image) {
             SDL_BlitSurface(TabBack[indlvl-1].image, &TabBack[indlvl-1].camera_pos, ecran, NULL);
         } else {
             SDL_BlitSurface(TabBack[indlvl-1].secondary_image, &TabBack[indlvl-1].camera_pos, ecran, NULL);
         }
         				updateBackgroundImage(&TabBack[indlvl-1]);
+
         				afficher_score(player.score,&PosTxt,&SurfText ,font ,txtCoul );
         				
         				afficher_energy(player,&PosEnergy,&SurfEnergy ,font ,energyCoul );
@@ -865,12 +870,12 @@ playS=false;
 					afficherES(ecran,TabEnt[EntityToShow]);
 					afficherminimap(TabMap[indlvl-1], ecran);
 				}
-				}else { // si il ya 2 joueur // MULTIPLAYER
+				}else  if (num_j ==2){ // si il ya 2 joueur // MULTIPLAYER
 						        Uint32 currentTime_P1 = SDL_GetTicks();
 						    	Uint32 currentTime_P2 = SDL_GetTicks();
 						    	printf("TIME %d ", currentTime_P1/1000);
-			 	SDL_BlitSurface(bg1.image, &bg1.camera_pos, ecran, &PLAYER1_ZONE);
-			 	SDL_BlitSurface(bg2.image, &bg2.camera_pos, ecran, &PLAYER2_ZONE);
+			 	SDL_BlitSurface(bg1.image, &PLAYER1_ZONE, ecran, &PLAYER1_ZONE);
+			 	SDL_BlitSurface(bg2.image, &PLAYER2_ZONE, ecran, &PLAYER2_ZONE);
         		renderPlayerFrame(&p1, ecran,font);
         		renderPlayerFrame(&p2,ecran,font);
         		Deplacer_ET_NON_COLLISION(&p1, &DotP1, PLAYER1_ZONE, &lastMoveTime_P1, currentTime_P1, moveInterval);
@@ -1426,6 +1431,7 @@ if (gameover==true) {
 						player.score=0;
 						lvl1=true;
 						gameover=false;
+						indlvl=1;
 					break;						
 					case SDLK_n:		
 						Playing=false;
@@ -1472,7 +1478,7 @@ if (gameover==true) {
 				time(&current_time);
 					                double elapsed_time = difftime(current_time, level_start_time);
 					                	
-					                if (elapsed_time >= 35) {
+					                if (elapsed_time >= 45 && !gameover) {
 			
 			
 							ttc=true;
@@ -1664,93 +1670,28 @@ if (gameover==true) {
 				if ( indlvl==3 ) {
 				time(&current_time);
 					                double elapsed_time = difftime(current_time, level_start_time);
-					                if (elapsed_time >= 50 && elapsed_time <= 100) {
+					                if (elapsed_time >= 3 && elapsed_time <= 10 && benig==false) {
 					                benig=true;
 					                }
 					               if ( benig){
+    									resultat_fichier = quiz1(&en,ecran);
+    										if ( resultat_fichier  == 1 ) {
+    												benig=false;
+    												//Playing=false;
+    												//playS=true;
+    										} else  if ( resultat_fichier == 2){
+    												benig=false;
+    												Playing=false;
+    												playS=false;
+    												handleGameLoss(ecran,&mainmenu,musicmenu); 
+
+
+    										}
+
 					                
 
-    e.num_enigme = -1;
-    int r = 0;
-    int running = 1; // Le jeu est initialement en cours d'exécution
-    int boucle = 1; // Boucle principale du jeu
-    char cc[30] = "0";
-    text tt;
-
-    init_enigme(&e);
-    initexte(&tt);
-		//e.img=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/img/enigme1-1.jpg");
-		
-while ( running){
-       SDL_BlitSurface(e.img, NULL, ecran, &e.p);
-        //SDL_Flip(ecran);
-
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-           
-
-            case SDL_KEYDOWN:
-                /*if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    boucle = 0; // Quitter la boucle sur ESC
-                    break;
-                }*/
-                
-                switch (event.key.keysym.sym) {
-                case SDLK_a:
-                    r = 1;
-                    running = 0; // Indiquer que le jeu doit arrêter après résultat
-                    break;
-                case SDLK_z:
-                    r = 2;
-                    running = 0;
-                    break;
-                case SDLK_e:
-                    r = 3;
-                    running = 0;
-                    break;
-                case SDLK_r:
-                    r = 4;
-                    running = 0;
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-
-       
-       }
-
-         if (running == 0) {
-         	       afficher_resultat(ecran, e.reponsevrai, r, &e);
-         	       running=1;
-     
-
-           }
-            if ( r != e.reponsevrai ) { // mauvaise reponse
-            			
-            					//running=1;
-													Playing=false;
-													gameover = true;
-													player.score += 500;
-																				
-									} else {
-												//		running=1;
-													Playing=false;
-
-													Pass_to_Next_Level(Loading, ecran, &nxtlvlSFX,&player,TabBack , indlvl);
-													//mainmenu=true;
-														playS=true;					
-					}
-
-
-        //}
-    
-							     
-					
-				
-				
 				}
+				printf("ETAT ENIGME %d\n ETAT GAMEOVER %d\n",benig,gameover);
 				}
 				
 				
@@ -1825,9 +1766,9 @@ while ( running){
     }
 
 
-    for (int i = 0; i < 2; i++) {
+    /*for (int i = 0; i < 2; i++) {
         SDL_FreeSurface(t.img[i]);
-    }
+    }*/
 
 
 
@@ -1853,10 +1794,10 @@ while ( running){
 
 	SDL_FreeSurface(Gameover);
 
-SDL_FreeSurface(e.img);
-    for (int i = 0; i < 10; i++) {
+//SDL_FreeSurface(e.img);
+    /*for (int i = 0; i < 10; i++) {
         SDL_FreeSurface(e.timer[i]);
-    }
+    }*/
     for (int dir = 0; dir < NUM_DIRECTIONS; ++dir) {
         for (int frame = 0; frame < NUM_FRAMES; ++frame) {
             SDL_FreeSurface(p1.sprite[dir][frame]);
@@ -1872,7 +1813,8 @@ SDL_FreeSurface(e.img);
    	SDL_FreeSurface(SurfTime_P2);
    	SDL_FreeSurface(SurfText_P1);
    	SDL_FreeSurface(SurfText_P2);
-    SDL_FreeSurface(e.res);
+    //SDL_FreeSurface(e.res);
+    free_surface_enig_fichier(&en);
     SDL_FreeSurface(m1.img_map);
     SDL_FreeSurface(m2.img_map);
     SDL_FreeSurface(m3.img_map);
