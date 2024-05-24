@@ -231,7 +231,7 @@ void afficherES(SDL_Surface *screen,Entity E) {
 
 void deplacerES(Entity *E, int dx) {
 	E->pos.x-=dx;
-	if ( E->pos.x == 0) {
+	if ( E->pos.x ==0) {
 	E->pos.x = 1600;
 	}
 }
@@ -326,6 +326,7 @@ Entity InitEntity(char* chemin, int x , int y,int dx) { // starting posotions{
 					e.pos.y=y;
 					e.active=false;
 					e.dx=dx;
+					e.weapon=false;
 				return e;
 }		
 			
@@ -353,13 +354,98 @@ Entity InitEntity(char* chemin, int x , int y,int dx) { // starting posotions{
 			
 }
 
+void initFinalBoss(Entity * FB) {
+	FB->anim[0]=IMG_Load("l/1.png");
+	FB->anim[1]=IMG_Load("l/2.png");
+	FB->anim[2]=IMG_Load("l/3.png");
+	FB->anim[3]=IMG_Load("l/4.png");
+	FB->anim[4]=IMG_Load("l/5.png");
+	FB->anim[5]=IMG_Load("l/moro_stance.png");
+		for( int i=0 ; i< 6 ; i++) {
+				if(!FB->anim[i]){printf("ERROR LAODING MORO %d\n",i);}
+		}
+	FB->health=200;
+	FB->dx=3;
+	FB->active=false;
+	FB->pos.x=1900;
+	FB->pos.y=ground;
 
+}
 	
+void AnimerFB(Entity *FB, SDL_Surface *ecran) {
+    static Uint32 lastFrameTime = 0;
+    Uint32 frameDelay = 100; 
+
+    Uint32 currentTime = SDL_GetTicks();
+    if (currentTime - lastFrameTime >= frameDelay) {
+        if (!FB->active) { 
+            if (FB->txt_cour > 3 ) {
+                FB->txt_cour = 0;
+            } else {
+                FB->txt_cour++;
+            }
+        }
+
+        lastFrameTime = currentTime;
+    }
+    
+    SDL_BlitSurface(FB->anim[FB->txt_cour], NULL, ecran, &FB->pos);
+}
 	
-	
+void deplacerFB_AVEC_AI(Entity *E , Person P , Entity * Drone) {
+	E->pos.x-=E->dx;
+	if ( (E->pos.x - 250  ) - (P.posinit.x ) < 900)  {
+	E->dx=0;
+	E->txt_cour = 5;
+	E->active = true;
+	E->pos.y = ground - 70;
+	E->weapon=true;
+	Drone->dx -= 3;
+	} else {
+		E->active=false;
+		E->dx=3;
 
 
-	
+	}
+
+
+}
+
+
+
+void Drop_Laser(Entity *laser, Entity *drone, int delay_ms) {
+    // Stop the drone
+    drone->dx = 0;
+
+    // Calculate the duration of the drop (adjust speed as needed for desired effect)
+    int dropDuration = 1000; // milliseconds
+
+    // Calculate the increment to move the laser beam per millisecond
+    float dropSpeed = (float)laser->pos.h / dropDuration;
+
+    // Delay before dropping the laser beam
+    //usleep(delay_ms * 1000); // Convert milliseconds to microseconds
+
+    // Update the laser beam's position gradually over the duration of the drop
+    int elapsedTime = 0;
+    while (elapsedTime < dropDuration) {
+        // Calculate the amount to move the laser beam vertically based on elapsed time
+        int deltaY = (int)(dropSpeed * elapsedTime);
+
+        // Set the position of the laser beam
+        laser->pos.x = 1920 / 2;        // Set X position to the center of the screen
+        laser->pos.y = laser->pos.y + deltaY;   // Update Y position
+
+        // Render the laser beam at the new position
+        // (You may need to redraw the entire screen here if necessary)
+
+        // Increment the elapsed time
+        elapsedTime += 1; // Increment by 1 millisecond
+
+        // Add a short delay to control the animation speed (adjust as needed)
+        //usleep(1000); // 1 millisecond delay
+    }
+}
 	
 	
 	

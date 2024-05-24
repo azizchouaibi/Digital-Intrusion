@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <SDL/SDL_ttf.h>
 #include "perso.h"
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
 
 void dimenstionsBTN(SDL_Rect* btn1,SDL_Rect *btn2,SDL_Rect *btn3,SDL_Rect* btn4,SDL_Surface * btnclick0) {
 	btn1->x=218;
@@ -464,10 +466,10 @@ void Pass_to_Next_Level(SDL_Surface *Loading[3], SDL_Surface *ecran, Mix_Chunk *
 }
 
 void InitCutscene( SDL_Surface ** Tab ) {
-    Tab[0]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p1.png");
-    Tab[1]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p2.png");
-    Tab[2]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p3.png");
-    Tab[3]=IMG_Load("/home/aziz/Desktop/pp (2)/pp/p4.png");
+    Tab[0]=IMG_Load("p1.png");
+    Tab[1]=IMG_Load("p2.png");
+    Tab[2]=IMG_Load("p3.png");
+    Tab[3]=IMG_Load("p4.png");
 
         for ( int i = 0 ; i< 4 ; i++) {
                 if(Tab[i] == NULL) {
@@ -586,18 +588,95 @@ SDL_FreeSurface(Story1);
 SDL_FreeSurface(MP0);
 SDL_FreeSurface(MP1);
 }
+bool SAVE_SCORE_MP(int scoreP1 , int scoreP2 ,const char *filename) {
+	FILE* fich=NULL;
+	fich=fopen(filename,"a+");
+		if (fich==NULL) {
+			printf("ERROR LOADING SCORE FILE (SAUVEGARDE SCORE) \n");
+			return false;
+		}else {
+			fprintf(fich,"%d\t%d\n",scoreP1,scoreP2);
+			fclose(fich);
+			return true;
+		}
+}
+void Blit_Top_Scores(const char *filename, int *scoresP1, int *scoresP2) {
+    FILE *fich = fopen(filename, "r");
+    if (fich == NULL) {
+        printf("ERROR OPENING SCORE FILE\n");
+        return;
+    }
+
+    // Initialize scores arrays
+    for (int i = 0; i < 3; i++) {
+        scoresP1[i] = 0;
+        scoresP2[i] = 0;
+    }
+
+    int scoreP1, scoreP2;
+    int i;
+
+    while (fscanf(fich, "%d %d", &scoreP1, &scoreP2) != EOF) {
+        // Update top 3 scores for player 1
+        for (i = 0; i < 3; i++) {
+            if (scoreP1 > scoresP1[i]) {
+                // Shift scores down to make room for the new score
+                for (int j = 2; j > i; j--) {
+                    scoresP1[j] = scoresP1[j - 1];
+                }
+                scoresP1[i] = scoreP1;
+                break;
+            }
+        }
+
+        // Update top 3 scores for player 2
+        for (i = 0; i < 3; i++) {
+            if (scoreP2 > scoresP2[i]) {
+                // Shift scores down to make room for the new score
+                for (int j = 2; j > i; j--) {
+                    scoresP2[j] = scoresP2[j - 1];
+                }
+                scoresP2[i] = scoreP2;
+                break;
+            }
+        }
+    }
+
+    fclose(fich);
+}
+
+void High_SCORE_MP(SDL_Surface *ecran, SDL_Surface *SurfText, int *scores, int num_scores, int start_x, int start_y) {
+    TTF_Font *font;
+    SDL_Color txtcolor;
+    SDL_Rect postxtEcran;
+    postxtEcran.x = start_x;
+    postxtEcran.y = start_y;
+    txtcolor.r = 255;
+    txtcolor.g = 0;
+    txtcolor.b = 255;
+    font = TTF_OpenFont("FOnt.ttf", 50);
+    if (!font) {
+        printf("ERROR LOADING FONT FOR HIGH SCORE\n");
+        return;
+    }
+
+    for (int i = 0; i < num_scores; i++) {
+        char high[20];
+        sprintf(high, "High Score %d: %d", i + 1, scores[i]);
+        SurfText = TTF_RenderText_Solid(font, high, txtcolor);
+        if (SurfText == NULL) {
+            printf("ERROR LOADING TEXT SURFACE FOR HIGH SCORE\n");
+            continue;
+        }
+        SDL_BlitSurface(SurfText, NULL, ecran, &postxtEcran);
+        postxtEcran.y += 50; // Adjust the y position for the next score
+        SDL_FreeSurface(SurfText); // Free the surface after blitting
+    }
+
+    TTF_CloseFont(font);
+}
 
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 			

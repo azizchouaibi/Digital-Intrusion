@@ -166,10 +166,10 @@ void alea_enig_fichier(enig_fichier *en, SDL_Color Color)
     }
 
     // Print the read question and answers for debugging
-    printf("Question: %s\n", ques);
+    /*printf("Question: %s\n", ques);
     printf("Answer 1: %s\n", rep1);
     printf("Answer 2: %s\n", rep2);
-    printf("Answer 3: %s\n", rep3);
+    printf("Answer 3: %s\n", rep3);*/
 
     en->question = TTF_RenderText_Blended(en->police_q, ques, Color);
     en->reponse_1 = TTF_RenderText_Blended(en->police, rep1, Color);

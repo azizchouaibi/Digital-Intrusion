@@ -79,7 +79,7 @@ if (SDL_Init(SDL_INIT_EVERYTHING) !=0 ) {
 	SDL_Quit();
 } else {	
 	
-	ecran = SDL_SetVideoMode(1920,1080,32, /*SDL_FULLSCREEN|*/ SDL_HWSURFACE| SDL_DOUBLEBUF | SDL_SRCALPHA | SDL_NOFRAME);
+	ecran = SDL_SetVideoMode(1920,1080,32, SDL_FULLSCREEN| SDL_HWSURFACE| SDL_DOUBLEBUF | SDL_SRCALPHA | SDL_NOFRAME);
 	if (ecran== NULL) {
 		printf("ERROR CREATING WINDOW");
 	}
@@ -201,6 +201,12 @@ SDL_Color Color = {255, 255, 255};
 enig_fichier en;
 int resultat_fichier;
 init_enig_fichier(&en, Color);
+Entity FB;
+initFinalBoss(&FB);
+Entity Drone;
+Entity Lazer_drone;
+
+
 
 
 
@@ -208,8 +214,8 @@ init_enig_fichier(&en, Color);
 
 ////
 Entity e1,e2,e3,CD_collect , Flash_collect , heart_collect,spider;
-Entity DotP1= InitEntity("mini_joueur.png",1000,400,0);
-Entity DotP2 = InitEntity("mini_es.png",0,0,0);
+Entity DotP1= InitEntity("mini_joueur.png",1440,540,0);
+Entity DotP2 = InitEntity("mini_es.png",480,540,0);
 e1= InitEntity( "enemy.png", 1950 , 650,10);
 e2= InitEntity("enemy2.png", 1950 ,650,12);
 e3= InitEntity( "enemy3.png", 1950 , 650,14);
@@ -218,7 +224,10 @@ Flash_collect= InitEntity("disk.png", 1100 ,ground+100,0);
 heart_collect= InitEntity( "coin.png", 1000, ground+100,0);
 CD_collect= InitEntity("cd.png", 1100 , ground-200,0);
 Entity  TabEnt[3] = {e1,e2,e3};
+Drone = InitEntity("drone.png", 1925 , 100 , -5);
+Lazer_drone = InitEntity("anim perso test/lazer_drone.png",Drone.pos.x , Drone.pos.y + 100, 10);
 
+ int scoresP1[3], scoresP2[3];
 SDL_Rect PlPvPos;
 /////////
 //VARIABLE DE LEVEL 1 : 
@@ -282,7 +291,8 @@ Background TabBack[3];
 		initBackground(&TabBack[1], ecran,"lvl2img1.png","lvl2img2.png"); // back lvl 2
 		initBackground(&TabBack[2], ecran,"lvl3img1.png","lvl3img2.png"); // back lvl3
     
-		
+							               bool final_boss = false;
+
 Person player;
 	 player=InitPerso(player);
 //Person p1;
@@ -415,8 +425,13 @@ playS=false;
 gameover=false;
 
 SDL_BlitSurface(imgmenu, NULL, ecran, &posimg);
+if ( num_j==1) {
 show_high_score(imgmenu,surft);
-
+} else if (num_j==2) {
+	Blit_Top_Scores("score_MP", scoresP1, scoresP2);
+	High_SCORE_MP(ecran, SurfText, scoresP1, 3, 1000, 200); 
+    High_SCORE_MP(ecran, SurfText, scoresP2, 3, 1000, 400);
+}
 	
 
 
@@ -428,6 +443,8 @@ show_high_score(imgmenu,surft);
 
 
 			changetexture(play,opts,creds,quit , event, 
+
+
 play0,
 play1,
 opts0,
@@ -821,7 +838,7 @@ playS=false;
 						PlPvPos = (SDL_Rect) player.posinit;
 			 TabMap[indlvl-1].pos_joueur = MAJMinimap(player.posinit, 10, TabBack[indlvl-1].camera_pos);  // Adjust scale as needed
 			 TabMap[indlvl-1].pos_es =MAJMinimap(TabEnt[EntityToShow].pos, 10, TabBack[indlvl-1].camera_pos);
-				deplacerES(&TabEnt[EntityToShow],TabEnt[EntityToShow].dx);
+				if ( final_boss == false) {deplacerES(&TabEnt[EntityToShow],TabEnt[EntityToShow].dx);}
 				deplacerCoin(&heart_collect,3);
 
 	       if (TabBack[indlvl-1].showing_main_image) {
@@ -869,8 +886,23 @@ playS=false;
 						if ( player.shoot) {
 								SDL_BlitSurface(lazer,NULL,ecran,&poslazer);
 						}
+						if ( indlvl==3) {
+								if (final_boss==true) {
+										
+										AnimerFB(&FB,ecran);deplacerFB_AVEC_AI(&FB,player,&Drone);
+										if( FB.weapon) {
+											//deplacerES(&Drone,Drone.dx);	
+											Drone.pos.x+=Drone.dx;
+											afficherES(ecran,Drone);
+											//Handle_Fight(&player,&FB);
+											afficherES(ecran,Lazer_drone);
+											//Drop_Laser(&Lazer_drone, &Drone, 2000);
 
-					afficherES(ecran,TabEnt[EntityToShow]);
+										}
+								}
+						}
+
+					if (final_boss == false) {afficherES(ecran,TabEnt[EntityToShow]);}
 					afficherminimap(TabMap[indlvl-1], ecran);
 				}
 				}else  if (num_j ==2){ // si il ya 2 joueur // MULTIPLAYER
@@ -894,7 +926,7 @@ playS=false;
       afficher_score(p2.score,&PosTxt,&SurfText_P1 ,font ,txtCoul );
       SDL_BlitSurface(SurfText_P1,NULL,ecran,&PosTxt);
       SDL_BlitSurface(SurfText_P2,NULL,ecran,&PosScoreP2);
-      if ( timer(currentTime_P1 ,font, PosVie_P1,ecran) == 0) {printf("Over \n");}
+      if ( timer(currentTime_P1 ,font, PosVie_P1,ecran) == 0) {handleMPGameState (p1.score , p2.score ,PLAYER1_ZONE,PLAYER2_ZONE ,  ecran,&mainmenu,&Playing);}
 
         SDL_Flip(ecran); // Update screen
         SDL_Delay(60); // Adjust frame rate
@@ -1037,6 +1069,7 @@ playS=false;
 				bgscrolling=7;
 				player.posinit.y=ground;
 				break;
+
 			
 				
 			}
@@ -1368,7 +1401,7 @@ if (jump_start_time != 0) {
             		
             
             
-        }if ( Collided(spider.pos,player.posinit) == 1  && player.slide==0){
+        }if ( Collided(spider.pos,player.posinit) == 1  && player.slide==0){	
 
 												spider.dx=15;
 												player.textcourant=14;
@@ -1394,7 +1427,38 @@ if (jump_start_time != 0) {
 				
 																				
 			
-																					
+	
+    if ((Drone.pos.x - 250) - player.posinit.x < 250 && (Drone.pos.x - 250) - player.posinit.x > 270 ) {
+    	Drone.dx=-10;
+    	//FB.pos.x += 50;
+    	
+
+    	
+    }
+    if( FB.pos.x < 1800) {
+    	if (player.shoot) {
+    				FB.dx=-10;
+    				FB.health-=25;		
+    		}
+    }
+    if (Collided(Drone.pos,player.posinit) == 1  ) {
+    			printf("COLLIDED\n");
+    			FB.dx-=10;
+
+    	}
+
+		if ( Drone.pos.x <= 50) {
+				Drone.dx =5;
+		} 
+		if (Drone.pos.x > 1800 ) {
+			Drone.dx=-5;
+		}
+
+		
+
+    	
+
+
         if ( num_j==1) {
         HandleCollision_Player_Bonus(&player,&heart_collect.pos,&player.score,CoinSFX);
     }
@@ -1675,11 +1739,16 @@ if (gameover==true) {
 					                double elapsed_time = difftime(current_time, level_start_time);
 					                if (elapsed_time >= 3 && elapsed_time <= 10 && benig==false) {
 					                benig=true;
+					                
 					                }
+
 					               if ( benig){
     									resultat_fichier = quiz1(&en,ecran);
     										if ( resultat_fichier  == 1 ) {
+    											
     												benig=false;
+    												final_boss = true;
+    											
     												//Playing=false;
     												//playS=true;
     										} else  if ( resultat_fichier == 2){
@@ -1694,7 +1763,8 @@ if (gameover==true) {
 					                
 
 				}
-				printf("ETAT ENIGME %d\n ETAT GAMEOVER %d\n",benig,gameover);
+				
+
 				}
 				
 				
@@ -1731,7 +1801,7 @@ if (gameover==true) {
 			
 			
 			//SAUVEGARDE DU SCORE
-			
+			if ( num_j==1) {
 			if ( sauvegarde_score(player.score,"score.txt") == false ) {
 				printf("ERROR SAVING SCORE \n");
 			} else {
@@ -1747,12 +1817,18 @@ if (gameover==true) {
 				printf("=========Highest Score:%u\n=========",highest_score);
 			}
 			
-			
+			} else {
+
+					if ( SAVE_SCORE_MP(p1.score ,p2.score ,"score_MP")){printf("MULTIPLAYER SCORE SAVED \n");}
+
+
+						}
 				
 			
 			
 			
 		//LIBERATION 
+			
 
 	for( int p=0 ; p < 16 ; p++) {
 		SDL_FreeSurface(player.texture[p]);
@@ -1810,6 +1886,10 @@ if (gameover==true) {
    	for ( int i=0 ; i < 4 ; i++) {
    			SDL_FreeSurface(TabCutscene[i]);
    	}
+   	for ( int i=0 ; i< 6 ; i++) {
+   			SDL_FreeSurface(FB.anim[i]);
+   	}
+
    	SDL_FreeSurface(DotP1.texture);
    	SDL_FreeSurface(DotP2.texture);
    	SDL_FreeSurface(SurfTime_P1);
@@ -1834,7 +1914,8 @@ if (gameover==true) {
     SDL_FreeSurface(Gameover);
     SDL_FreeSurface(ES);
 		SDL_FreeSurface(surft);
-		
+	SDL_FreeSurface(Lazer_drone.texture);
+	SDL_FreeSurface(Drone.texture);
     Mix_FreeMusic(musicmenu);
     Mix_FreeMusic(themelvl1);
     Mix_FreeChunk(click);

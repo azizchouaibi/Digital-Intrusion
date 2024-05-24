@@ -66,10 +66,13 @@ void afficher_score(int score ,  SDL_Rect * PosTxt, SDL_Surface ** SurfText , TT
 
 typedef struct {
 		SDL_Surface * texture;
+		SDL_Surface * anim[6];
 		SDL_Rect pos;
 		bool active;
 		int dx;
 		int health;
+		int txt_cour;
+		bool weapon;
 }Entity;
 
 

@@ -138,23 +138,23 @@ void Deplacer_ET_NON_COLLISION(Person *P, Entity *Dot, SDL_Rect PlayZone, Uint32
 }
 
 int timer(Uint32 Time , TTF_Font * font , SDL_Rect PosVie, SDL_Surface * ecran) {
-        int time_in_s = 120 - (Time / 1000);
+        int time_in_s = 122 - (Time / 1000);
         char CTime[3];
         SDL_Surface * SurfTime;
-                if ( time_in_s <= 0) {time_in_s = 0; return 0;}
+                if ( time_in_s  <= 0) {time_in_s = 0; return 0;}
         sprintf(CTime,"%d",time_in_s);
         SDL_Color txtCoul={255,0,255};
         SurfTime = TTF_RenderText_Solid(font,CTime,txtCoul);
         SDL_BlitSurface(SurfTime,NULL,ecran,&PosVie);
-        
+        return 1;
 }
 
 
-void handleMPGameState (int scoreP1 , int scoreP2 , SDL_Rect PlayerZone_1 , SDL_Rect PlayerZone_2 , SDL_Surface * ecran,  bool * mainmenu) {
+void handleMPGameState (int scoreP1 , int scoreP2 , SDL_Rect PlayerZone_1 , SDL_Rect PlayerZone_2 , SDL_Surface * ecran,  bool * mainmenu , bool *Playing) {
     SDL_Rect PosWinner,PosLoser;
     SDL_Surface * Winner , *loser;
-    Winner = IMG_Load("");
-    loser = IMG_Load("");
+    Winner = IMG_Load("win1.png");
+    loser = IMG_Load("lose1.png");
     
         if (!Winner || !loser) {
                 printf("ERROR LOADING WINNER OR LOSER PHOTO\n");
@@ -170,7 +170,10 @@ void handleMPGameState (int scoreP1 , int scoreP2 , SDL_Rect PlayerZone_1 , SDL_
 
     while (SDL_GetTicks() - start_time < 3000) {
     }
+        *Playing=false;
         *mainmenu = true;
 
 
 }
+
+
