@@ -677,6 +677,51 @@ void High_SCORE_MP(SDL_Surface *ecran, SDL_Surface *SurfText, int *scores, int n
 }
 
 
+void handleGameWin(SDL_Surface *ecran, bool *mainmenu, Mix_Music *MenuMusic) {
+    SDL_Surface *pic = IMG_Load("pic.png");
+    ColorFade fade;
+    initColorFade(&fade, 255, 0, 0, 0, 0, 255, 2000);
+    if (!pic) {
+        printf("ERROR LOADING GAME LOSS PICTURE");
+        return;
+    }
+
+    SDL_Surface *ThankYou = IMG_Load("thank_you_img.png");
+    if (!ThankYou) {
+        printf("ERROR LOADING THANK YOU \n");
+        return;
+    }
+
+    Mix_Chunk *WinSFX = Mix_LoadWAV("gameLossSFX.wav");
+    if (!WinSFX) {
+        printf("ERROR LOADING GAME WIN SFX");
+        return;
+    }
+
+    
+
+    SDL_Flip(ecran);
+    Mix_HaltMusic();
+    Mix_PlayChannel(-1, WinSFX, 0);
+
+    Uint32 start_time = SDL_GetTicks();
+
+    while (SDL_GetTicks() - start_time < 3000) {
+    	updateScreenColor(ecran, &fade);
+    }
+
+    SDL_BlitSurface(ThankYou, NULL, ecran, NULL);
+    SDL_Flip(ecran);
+    start_time = SDL_GetTicks();
+
+    while (SDL_GetTicks() - start_time < 4000) {
+    }
+    Mix_ResumeMusic();
+    Mix_PlayMusic(MenuMusic, -1);
+
+    *mainmenu = true;
+}
+
 	
 	
 			

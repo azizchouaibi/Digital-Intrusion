@@ -71,10 +71,17 @@ typedef struct {
 		bool active;
 		int dx;
 		int health;
-		int txt_cour;
+		int txt_cour;	
 		bool weapon;
+		int state; // 1 moving 0 pausing
 }Entity;
-
+typedef struct {
+    Uint8 startR, startG, startB;
+    Uint8 endR, endG, endB;
+    Uint32 startTime;
+    Uint32 duration;
+    bool active;
+} ColorFade;
 
 int InitES(SDL_Surface **ES, SDL_Surface **Coin,  char* cheminES, char *cheminCoin, SDL_Rect *poses , SDL_Rect * posCoin);
 //void afficherES(SDL_Surface *screen, SDL_Surface *ES, SDL_Surface *Coin, SDL_Rect poses_ES, SDL_Rect poses_Coin);
@@ -85,6 +92,6 @@ Entity InitEntity(char* chemin,int x , int y,int dx);
 
  int CollisionTrigo(SDL_Rect C, Person P);
 
- 
+
  	
 	

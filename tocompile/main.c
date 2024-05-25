@@ -203,6 +203,8 @@ int resultat_fichier;
 init_enig_fichier(&en, Color);
 Entity FB;
 initFinalBoss(&FB);
+ColorFade fade;
+initColorFade(&fade, 255, 0, 0, 0, 0, 255, 2000); // Red to Blue over 2000 ms
 Entity Drone;
 Entity Lazer_drone;
 
@@ -225,7 +227,9 @@ heart_collect= InitEntity( "coin.png", 1000, ground+100,0);
 CD_collect= InitEntity("cd.png", 1100 , ground-200,0);
 Entity  TabEnt[3] = {e1,e2,e3};
 Drone = InitEntity("drone.png", 1925 , 100 , -5);
-Lazer_drone = InitEntity("anim perso test/lazer_drone.png",Drone.pos.x , Drone.pos.y + 100, 10);
+Lazer_drone = InitEntity("anim perso test/lazer_drone.png",0 ,0, 0);
+Drone.state = 1;
+
 
  int scoresP1[3], scoresP2[3];
 SDL_Rect PlPvPos;
@@ -890,16 +894,49 @@ playS=false;
 								if (final_boss==true) {
 										
 										AnimerFB(&FB,ecran);deplacerFB_AVEC_AI(&FB,player,&Drone);
+										render_hacker_health(&FB,ecran,font,1000);
+
 										if( FB.weapon) {
 											//deplacerES(&Drone,Drone.dx);	
-											Drone.pos.x+=Drone.dx;
-											afficherES(ecran,Drone);
+											  move_and_animate_drone(&Drone, &Lazer_drone);
+											  move_laser(&Lazer_drone);
+
+											  afficherES(ecran,Drone);
 											//Handle_Fight(&player,&FB);
-											afficherES(ecran,Lazer_drone);
+
+											  	if (Lazer_drone.active) {
+                									afficherES(ecran, Lazer_drone);
+          									    }
 											//Drop_Laser(&Lazer_drone, &Drone, 2000);
 
 										}
+										if ( FB.pos.x < 1800 && player.shoot) {
+
+										handle_FB_health(&FB, poslazer);
+										
 								}
+									if(checkCollision(player.posinit,Lazer_drone.pos)) {
+										if (sfClick == false) {
+                        Mix_PlayChannel(-1, dmgSFX, 0);
+                    }
+
+                    player.textcourant = 14;
+												player.num_hearts=1;
+
+										}
+									if ( FB.health <= 400) {
+
+											        //updateScreenColor(ecran, &fade);
+
+											        handleGameWin(ecran,&mainmenu,musicmenu);
+											        FB.health=1000;
+											        Playing=false;
+									}
+
+
+
+
+							}
 						}
 
 					if (final_boss == false) {afficherES(ecran,TabEnt[EntityToShow]);}
@@ -1293,7 +1330,7 @@ if (jump_start_time != 0) {
 				
 					
 			
-	if (player.posinit.x >= 350 ) {   
+	if (player.posinit.x >= 350  ) {   
 	   player.posinit.x= 350 ;   
        scrollingHorizontal(&TabBack[indlvl-1], bgscrolling);			
        	}
@@ -1428,7 +1465,7 @@ if (jump_start_time != 0) {
 																				
 			
 	
-    if ((Drone.pos.x - 250) - player.posinit.x < 250 && (Drone.pos.x - 250) - player.posinit.x > 270 ) {
+   /* if ((Drone.pos.x - 250) - player.posinit.x < 250 && (Drone.pos.x - 250) - player.posinit.x > 270 ) {
     	Drone.dx=-10;
     	//FB.pos.x += 50;
     	
@@ -1440,9 +1477,8 @@ if (jump_start_time != 0) {
     				FB.dx=-10;
     				FB.health-=25;		
     		}
-    }
+    }*/
     if (Collided(Drone.pos,player.posinit) == 1  ) {
-    			printf("COLLIDED\n");
     			FB.dx-=10;
 
     	}

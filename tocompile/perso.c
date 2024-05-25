@@ -327,6 +327,7 @@ Entity InitEntity(char* chemin, int x , int y,int dx) { // starting posotions{
 					e.active=false;
 					e.dx=dx;
 					e.weapon=false;
+					e.state=1;
 				return e;
 }		
 			
@@ -364,7 +365,7 @@ void initFinalBoss(Entity * FB) {
 		for( int i=0 ; i< 6 ; i++) {
 				if(!FB->anim[i]){printf("ERROR LAODING MORO %d\n",i);}
 		}
-	FB->health=200;
+	FB->health=250;
 	FB->dx=3;
 	FB->active=false;
 	FB->pos.x=1900;
@@ -390,6 +391,10 @@ void AnimerFB(Entity *FB, SDL_Surface *ecran) {
     }
     
     SDL_BlitSurface(FB->anim[FB->txt_cour], NULL, ecran, &FB->pos);
+    // Calculate position for health text (adjust as needed)
+ 
+
+   
 }
 	
 void deplacerFB_AVEC_AI(Entity *E , Person P , Entity * Drone) {
@@ -413,39 +418,7 @@ void deplacerFB_AVEC_AI(Entity *E , Person P , Entity * Drone) {
 
 
 
-void Drop_Laser(Entity *laser, Entity *drone, int delay_ms) {
-    // Stop the drone
-    drone->dx = 0;
 
-    // Calculate the duration of the drop (adjust speed as needed for desired effect)
-    int dropDuration = 1000; // milliseconds
-
-    // Calculate the increment to move the laser beam per millisecond
-    float dropSpeed = (float)laser->pos.h / dropDuration;
-
-    // Delay before dropping the laser beam
-    //usleep(delay_ms * 1000); // Convert milliseconds to microseconds
-
-    // Update the laser beam's position gradually over the duration of the drop
-    int elapsedTime = 0;
-    while (elapsedTime < dropDuration) {
-        // Calculate the amount to move the laser beam vertically based on elapsed time
-        int deltaY = (int)(dropSpeed * elapsedTime);
-
-        // Set the position of the laser beam
-        laser->pos.x = 1920 / 2;        // Set X position to the center of the screen
-        laser->pos.y = laser->pos.y + deltaY;   // Update Y position
-
-        // Render the laser beam at the new position
-        // (You may need to redraw the entire screen here if necessary)
-
-        // Increment the elapsed time
-        elapsedTime += 1; // Increment by 1 millisecond
-
-        // Add a short delay to control the animation speed (adjust as needed)
-        //usleep(1000); // 1 millisecond delay
-    }
-}
 	
 	
 	
