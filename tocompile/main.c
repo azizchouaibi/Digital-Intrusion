@@ -30,13 +30,13 @@ printf("=========STARTED=========\n");
 //VARIABLES GLOABLES
 time_t lastDamageTime = 0; 
 SDL_Event event;
-bool mainmenu=true;
+bool mainmenu=false;
 bool optionmenu=false;
 bool gameloop=true;
 SDL_Surface *ecran=NULL;
 SDL_Surface *imgmenu=NULL,*play0=NULL,*play1=NULL,*opts0=NULL,*opts1=NULL,*credit0=NULL,*credit1=NULL,*quit0=NULL,*quit1=NULL,*lvlback=NULL,*ecranf,*ecranwin;
 SDL_Rect posimg,poslvl1;
-Mix_Music *musicmenu,*cutSMusic;
+Mix_Music *musicmenu;
 Mix_Chunk *click,*jumpSFX,*gameOverSFX,*dmgSFX,*CoinSFX;
 SDL_Rect play,opts,creds,quit;
 SDL_Surface *backg=NULL;
@@ -84,6 +84,7 @@ if (SDL_Init(SDL_INIT_EVERYTHING) !=0 ) {
 		printf("ERROR CREATING WINDOW");
 	}
 	//LES BOUTONS :
+	      SDL_EnableUNICODE(1);
 
 	loadbtns(&play0,&play1,&opts0,&opts1,&credit0,&credit1,&quit0,&quit1);
 	
@@ -313,10 +314,7 @@ font=TTF_OpenFont("FOnt.ttf",50);
 		printf("ERROR LOADING MUSIC  \n");
 	}
 		
-	cutSMusic = Mix_LoadMUS("");
-		if ( !cutSMusic) {
-				printf("ERROR LOADING CUT SCENE MUSIC \n");
-		}
+	
 
 						Mix_PlayMusic(musicmenu,-1);
 int Temps=0;
@@ -414,8 +412,17 @@ SDL_Rect poslazer;
 	poslazer.y=player.posinit.y +50;
 	//bool player.shoot=false;
 	SDL_Rect camera = {0, 0, 1024, 768};
+int chose=0; // variable for login/signup
 while (gameloop) {
 			if (num_j==0) {handleGameMode(&num_j,ecran);}
+				if(chose ==0) {
+						if(game(event,ecran) ==1) {
+								mainmenu=true;
+								chose=1;
+						}else {
+								gameloop=false;
+						}
+				}
 
 if ( manette ==1) {
 nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
@@ -423,6 +430,7 @@ nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
 
 
     				int EntityToShow = rand() % 3 ;
+
 if (mainmenu ) {
 optionmenu=false;
 playS=false;
@@ -924,12 +932,12 @@ playS=false;
 												player.num_hearts=1;
 
 										}
-									if ( FB.health <= 400) {
+									if ( FB.health < 0) {
 
 											        //updateScreenColor(ecran, &fade);
 
 											        handleGameWin(ecran,&mainmenu,musicmenu);
-											        FB.health=1000;
+											        FB.health=500;
 											        Playing=false;
 									}
 
