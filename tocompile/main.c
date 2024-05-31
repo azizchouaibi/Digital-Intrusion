@@ -413,10 +413,11 @@ SDL_Rect poslazer;
 	//bool player.shoot=false;
 	SDL_Rect camera = {0, 0, 1024, 768};
 int chose=0; // variable for login/signup
+user Current_User;
 while (gameloop) {
 			if (num_j==0) {handleGameMode(&num_j,ecran);}
 				if(chose ==0) {
-						if(game(event,ecran) ==1) {
+						if(game(event,ecran,&Current_User) ==1) {
 								mainmenu=true;
 								chose=1;
 						}else {
@@ -537,7 +538,11 @@ SDL_Flip(ecran);
 				case SDLK_h:
 				break;
 				case SDLK_BACKSPACE:
+					if (mainmenu==true){num_j=0;} else {
 				mainmenu=true;
+				optionmenu=false;
+				credit=false;
+			}
 				break;
 				case SDLK_o:
 				mainmenu=false;
@@ -547,6 +552,7 @@ SDL_Flip(ecran);
 				mainmenu=false;
 				playS=true;
 				break;
+				
 				
 			}
 				break;	
@@ -660,7 +666,7 @@ if ( credit) {mainmenu=false;SDL_BlitSurface(creditsIMG,NULL,ecran,&pas);} //
 if (optionmenu==true ){
 								
 		
-		        SDL_BlitSurface(backg, NULL, ecran, &posopt);
+		        SDL_BlitSurface(backg, NULL, ecran, NULL);
 		        if ( MsClick == false) {
 			SDL_BlitSurface(btn[0].img[0],NULL,backg,&btn[0].pos);
 			Mix_VolumeMusic(90);
@@ -758,6 +764,10 @@ if (optionmenu==true ){
 									
 								}
 							}
+
+
+
+
 							}
 					
 						
@@ -841,7 +851,6 @@ playS=false;
 							}
 						}
 							player.score=0;
-							printf("IND CUTSCENE %d\n etat Cut %d\n",ind_cutscene,cut_scene);
 
 					//}
 					
@@ -1057,7 +1066,7 @@ playS=false;
 
 					break;
 					
-					case SDLK_ESCAPE:
+					/*case SDLK_ESCAPE:
 						if ( Playing == true) {
 					Playing=false;
 					mainmenu=true;
@@ -1065,7 +1074,7 @@ playS=false;
 
 					}
 					
-					break;
+					break;*/
 					case SDLK_SPACE:
 					if ( jump == false) {
 					jump=true;
@@ -1082,7 +1091,18 @@ playS=false;
 					case SDLK_x:
 						player.shoot=true;
 						break;
+					case SDLK_ESCAPE:
+							 if(handle_pause_menu(event, ecran,&player ,indlvl, collected,&Current_User)==2) {
+							 	Playing=false;
+					mainmenu=true;
+					Mix_PlayMusic(musicmenu,-1);
+
+							}
+					break;
+
+
 				}
+
 				
 
 			break;
@@ -1469,7 +1489,8 @@ if (jump_start_time != 0) {
 													if ( spider.pos.x >= 1960) {
 																spider.dx=5;
 														}}
-				
+
+
 																				
 			
 	

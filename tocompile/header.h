@@ -26,8 +26,6 @@ typedef struct {
 typedef struct {
 	SDL_Surface * img[2];
 	SDL_Rect pos;
-	//Mix_Chunk *sfx;
-	//int etat; // 1 si souris sur 0 sinon
 }Button;
 
 typedef struct {
@@ -35,7 +33,13 @@ typedef struct {
 	SDL_Rect pos;
 	int i;
 }animation;
-
+typedef	struct 
+{
+	char username[256];
+	char password[256];
+	char pfp_path[256];
+	SDL_Surface * pfp;
+}user;
 
 
 void dimenstionsBTN(SDL_Rect *btn1,SDL_Rect *btn2,SDL_Rect* btn3,SDL_Rect *btn4, SDL_Surface *btnclick0);

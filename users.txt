@@ -1,7 +1,1 @@
-*aziz *pass
-*aziz *114
-*user *p
-*user *pass
-*user *pass
-*usser *pass
-*yosi *moro
+*user *pass /home/aziz/Desktop/Digital_Intrusion/pfp/pfp1.png

@@ -1,5 +1,5 @@
 executable: main.o fonctions.o back.o perso.o tictactoe.o enigme.o minimap.o second_person.o entity.o login.o
-	gcc main.o fonctions.o back.o perso.o tictactoe.o enigme.o minimap.o second_person.o entity.o login.o -o executable -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf -lSDL_gfx -lm
+	gcc main.o fonctions.o back.o perso.o tictactoe.o enigme.o minimap.o second_person.o entity.o login.o -o executable -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf -lSDL_gfx -lm -lX11
 	./executable
 fonctions.o: tocompile/fonctions.c
 	gcc -c tocompile/fonctions.c
