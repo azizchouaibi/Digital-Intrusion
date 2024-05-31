@@ -9,23 +9,18 @@
 #define dy 150
 #define  COLLISION_RESET_TIME 3000
 
-void loadPlayerSpriteSheet(Person *p1, const char *filename, SDL_Surface *screen) {
+void loadPlayerSpriteSheet(Person *p1, const char *filename) {
     SDL_Surface *spriteSheet = IMG_Load(filename);
     if (!spriteSheet) {
         printf("ERROR LOADING SPRITE");
         exit(1);
     }
 
-    // Set transparent color (if necessary)
-    /*Uint32 colorkey = SDL_MapRGB(spriteSheet->format, 0, 0, 0);
-    SDL_SetColorKey(spriteSheet, SDL_SRCCOLORKEY, colorkey);*/
-
-    // Store the entire sprite sheet surface
+ 
     p1->spriteSheet = spriteSheet;
 
     // Calculate the number of frames in each direction
     int framesPerDirection = 3;
-        printf("Frames per direction %d",framesPerDirection);
 
     // Divide the sprite sheet into frames for each direction
     for (int dir = 0; dir < NUM_DIRECTIONS; ++dir) {
@@ -47,19 +42,13 @@ void loadPlayerSpriteSheet(Person *p1, const char *filename, SDL_Surface *screen
 }
 
 
-void renderPlayerFrame(Person *p1, SDL_Surface *screen,TTF_Font * font) {
+void renderPlayerFrame(Person *p1, SDL_Surface *screen) {
     SDL_Rect dest;
     dest.x = p1->posinit.x ;
     dest.y = p1->posinit.y;
     dest.w = SPRITE_WIDTH;
     dest.h = SPRITE_HEIGHT;
            
-
-
-
-
-
-
 
     // Render frame for the current direction
     SDL_BlitSurface(p1->spriteSheet,&p1->frameClips[p1->direction][p1->frame], screen, &dest);
@@ -129,9 +118,7 @@ void Deplacer_ET_NON_COLLISION(Person *P, Entity *Dot, SDL_Rect PlayZone, Uint32
     // Check for collision
     if (!collisionOccurred && checkCollision(P->posinit,Dot->pos) == 1) {
         P->score++;
-        printf("COLLIDED \n");
         deplacerEntite_MULTIJOUEUR(*P, Dot, PlayZone);
-        printf("X:%d\n Y: %d\n" , Dot->pos.x , Dot->pos.y);
         *lastMoveTime = currentTime;
         collisionOccurred = 1; // Set collision flag
     }

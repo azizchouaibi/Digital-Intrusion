@@ -230,7 +230,8 @@ Entity  TabEnt[3] = {e1,e2,e3};
 Drone = InitEntity("drone.png", 1925 , 100 , -5);
 Lazer_drone = InitEntity("anim perso test/lazer_drone.png",0 ,0, 0);
 Drone.state = 1;
-
+Button Load_btn;
+init_btn(&Load_btn,"for ts/load_1.png","for ts/load_0.png",650,721);
 
  int scoresP1[3], scoresP2[3];
 SDL_Rect PlPvPos;
@@ -300,9 +301,7 @@ Background TabBack[3];
 
 Person player;
 	 player=InitPerso(player);
-//Person p1;
-	//p1=InitPerso(p1);
-	//p1.posinit.x=1080;
+
 	
 font=TTF_OpenFont("FOnt.ttf",50);
 		if( font == NULL) {
@@ -380,16 +379,17 @@ if (manette ==1) {
 		Background bg1, bg2;
 		initBackground(&bg1, ecran,"bg1.png","lvl1img2.png");
    		initBackground(&bg2, ecran,"bg1.png","lvl1img2.png");    
-		Person p1;
+	Person p1;
 	p1.posinit.x=1380;
 	p1.posinit.y=540;
 	Person p2;
 	p2.posinit.x=480;
 	p2.posinit.y=540;
 	p1.score=0;
+	p2.score=0;
 	SDL_Rect PlaySpace1 = {1130,170 , 627 , 733};
 	SDL_Rect PlaySpace2 = {170 , 170 ,627 , 733 };
-	loadPlayerSpriteSheet(&p1, "yosri.png");
+loadPlayerSpriteSheet(&p1, "yosri.png");
  loadPlayerSpriteSheet(&p2, "emna.png");					
  bool p1r=false,p1l=false,p1u=false,p1d=false;
 bool p2r=false,p2l=false,p2u=false,p2d=false;
@@ -416,13 +416,15 @@ int chose=0; // variable for login/signup
 user Current_User;
 while (gameloop) {
 			if (num_j==0) {handleGameMode(&num_j,ecran);}
-				if(chose ==0) {
+				if(chose ==0 && num_j==1 ) {
 						if(game(event,ecran,&Current_User) ==1) {
 								mainmenu=true;
 								chose=1;
 						}else {
 								gameloop=false;
 						}
+				} else if(chose ==0 && num_j==2) {
+						mainmenu=true;
 				}
 
 if ( manette ==1) {
@@ -731,6 +733,7 @@ if (optionmenu==true ){
 			if ( playS) {
 				if ( num_j==2 ) {indlvl=1;Playing=true;playS=false;}	
 					SDL_BlitSurface(seleclevel,NULL,ecran,&posimg);
+					 blitButton(ecran,&Load_btn,event);
 					while ( SDL_PollEvent(&event)){
 						switch(event.type) {
 							case SDL_KEYDOWN:
@@ -764,6 +767,12 @@ if (optionmenu==true ){
 									
 								}
 							}
+
+						if(isButtonClicked(&event,&Load_btn.pos)){
+								loadGame("Saves.txt",&player,&indlvl,&collected,&Current_User);
+								Playing=true;
+								playS=false;
+						}
 
 
 
@@ -965,8 +974,8 @@ playS=false;
 						    	printf("TIME %d ", currentTime_P1/1000);
 			 	SDL_BlitSurface(bg1.image, NULL, ecran, &PLAYER1_ZONE);
 			 	SDL_BlitSurface(bg2.image, NULL, ecran, &PLAYER2_ZONE);
-        		renderPlayerFrame(&p1, ecran,font);
-        		renderPlayerFrame(&p2,ecran,font);
+			 	renderPlayerFrame(&p1,ecran);
+        		renderPlayerFrame(&p2,ecran);
         		Deplacer_ET_NON_COLLISION(&p1, &DotP1, PlaySpace1, &lastMoveTime_P1, currentTime_P1, moveInterval);
 				Deplacer_ET_NON_COLLISION(&p2, &DotP2, PlaySpace2, &lastMoveTime_P2, currentTime_P2, moveInterval);
         		afficherES(ecran,DotP1);
@@ -983,63 +992,7 @@ playS=false;
       if ( timer(currentTime_P1 ,font, PosVie_P1,ecran) == 0) {handleMPGameState (p1.score , p2.score ,PLAYER1_ZONE,PLAYER2_ZONE ,  ecran,&mainmenu,&Playing);}
 
         SDL_Flip(ecran); // Update screen
-        SDL_Delay(60); // Adjust frame rate
-			
-
-
-
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-									
-													
+        SDL_Delay(60); // Adjust frame rate								
 
 				
 				}
@@ -1969,6 +1922,7 @@ if (gameover==true) {
     SDL_FreeSurface(m1.img_es);
     SDL_FreeSurface(m2.img_es);
     SDL_FreeSurface(m3.img_es);
+    freeButton(&Load_btn);
     SDL_FreeSurface(lazer);
     SDL_FreeSurface(ecran);
     SDL_FreeSurface(imgmenu);

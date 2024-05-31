@@ -525,14 +525,14 @@ void handleGameLoss(SDL_Surface *ecran, bool *mainmenu, Mix_Music *MenuMusic) {
 
 void handleGameMode(int * num_j ,SDL_Surface* ecran ) {
 	SDL_Surface * ChooseMode = IMG_Load("selec_game_mode.png");
-	SDL_Surface * Story0=IMG_Load("for ts/str0.png");
-	SDL_Surface *Story1=IMG_Load("for ts/str1.png");
-	SDL_Surface *MP0=IMG_Load("for ts/mp0.png");
+	SDL_Surface * Story0=IMG_Load("for ts/story_mode_0.png");
+	SDL_Surface *Story1=IMG_Load("for ts/story_1.png");
+	SDL_Surface *MP0=IMG_Load("for ts/mp_0.png");
 	SDL_Surface *MP1=IMG_Load("for ts/mp1.png");
 
 
 	SDL_Rect Story_Mode={450,450,Story0->w,Story0->h};
-	SDL_Rect Multiplayer_Mode={950,450,MP0->w,MP0->h};
+	SDL_Rect Multiplayer_Mode={1050,450,MP0->w,MP0->h};
 	bool PosSouris;
 		if ( !ChooseMode || !Story0 || !Story1 || !MP0 || ! MP1  ) {
 				printf("ERROR CHOOSING MODE \n");

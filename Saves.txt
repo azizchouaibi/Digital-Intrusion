@@ -6,3 +6,10 @@
  	@}X3”\	30927	3	100	3	0
  	@}X3”\	38456	1	76	3	0
 *user	*pass	598	3	100	2	0
+*asba	*asba	6319	3	100	1	0
+*user	*pass	2396	2	63	2	0
+*user	*pass	8728	2	50	2	1
+*user	*pass	1997	3	81	2	0
+*user	*pass	6397	3	77	3	0
+*user	*pass	2167	2	47	2	0
+*user	*pass	97000	3	100	2	1

@@ -423,26 +423,37 @@ bool saveGame(const char *filename, int score, int health, int energy, int level
     return true;
 }
 
-void loadGame(const char *filename,Person * player, int *level, int *collectibles, user *users) {
+void loadGame(const char *filename, Person *player, int *level, int *collectibles, const user *currentUser) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         fprintf(stderr, "Unable to open file for loading\n");
         return;
     }
 
-    // Read game state variables from the file
-    fscanf(file, "%d", player->score);
-    fscanf(file, "%d", player->num_hearts);
-    fscanf(file, "%d", player->energy);
-    fscanf(file, "%d", level);
-    fscanf(file, "%d", collectibles);
+    char line[512];
+    char username[256], password[256];
+    int score, num_hearts, energy, file_level, file_collectibles;
 
-    // Read user data from the file
-    
+    // Iterate through each line of the file
+    while (fgets(line, sizeof(line), file) != NULL) {
+        // Parse the line to extract the username, password, and game data
+        if (sscanf(line, "%255s\t%255s\t%d\t%d\t%d\t%d\t%d", username, password, &score, &num_hearts, &energy, &file_level, &file_collectibles) == 7) {
+            // Check if the username and password match the current user's credentials
+            if (strcmp(username, currentUser->username) == 0 && strcmp(password, currentUser->password) == 0) {
+                // Load the user's game data
+                player->score = score;
+                player->num_hearts = num_hearts;
+                player->energy = energy;
+                *level = file_level;
+                *collectibles = file_collectibles;
+                break; // Stop searching after finding the user's data
+            }
+        }
+    }
 
     fclose(file);
 }
-    
+
 
 
 void freeButton(Button *button) {
@@ -623,7 +634,9 @@ int Handle_PP(SDL_Event event, SDL_Surface *ecran, user *us) {
             printf("ERROR: Failed to load default profile picture\n");
         }
     }
-
+    freeButton(&PFP1);
+    freeButton(&PFP2);
+    freeButton(&PFP3);
     return valid_image;
 }
 
