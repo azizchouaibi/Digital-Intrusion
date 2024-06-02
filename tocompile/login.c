@@ -258,7 +258,7 @@ void blitButton(SDL_Surface *ecran, Button *button,SDL_Event  event) {
 }
 
 int game(SDL_Event  event,SDL_Surface * ecran, user * us) {
-     SDL_Surface *backg = IMG_Load("src/login_sns_tn.png"); 
+     SDL_Surface *backg = IMG_Load("login[1].png"); 
      Button btn_login,btn_signup;
     init_btn(&btn_login,"src/login_1.png","src/login_0.png",370 , 821);
     init_btn(&btn_signup,"src/singup_1.png","src/signup_0.png",1130 , 813);
@@ -303,9 +303,9 @@ int game(SDL_Event  event,SDL_Surface * ecran, user * us) {
         blitButton(ecran, &btn_signup,event);
 
           //renderText(ecran, "Username:", font, color, 960, 50);
-        renderText(ecran, username, font, active_input == 0 ? active_color : color, 720, 356);
+        renderText(ecran, username, font, active_input == 0 ? active_color : color, 720, 305);
         //renderText(ecran, "Password:", font, color, 960, 150);
-        renderText(ecran, password, font, active_input == 1 ? active_color : color, 720, 543);
+        renderText(ecran, password, font, active_input == 1 ? active_color : color, 720, 495);
 
         SDL_Flip(ecran);
             while(SDL_PollEvent(&event)) {
@@ -356,7 +356,7 @@ int game(SDL_Event  event,SDL_Surface * ecran, user * us) {
                     } else {
                     renderText(ecran, "This user doesnt exist", font, error_color, 678, 662);
                     SDL_Flip(ecran);
-                    SDL_Delay(2000);
+                    SDL_Delay(1000);
 
                     }
                  }else if (isButtonClicked(&event, &pos_sign)) { // Signup state
@@ -364,17 +364,17 @@ int game(SDL_Event  event,SDL_Surface * ecran, user * us) {
         if (write_user("users.txt", username, password, us->pfp_path) == 0) {
             renderText(ecran, "Signup Successful", font, color, 678, 662);
             SDL_Flip(ecran);
-            SDL_Delay(2000);
+            SDL_Delay(1000);
             state = 0; // Go back to login state
         } else {
             renderText(ecran, "This User Exists ", font, error_color, 678, 662);
             SDL_Flip(ecran);
-            SDL_Delay(2000);
+            SDL_Delay(1000);
         }
     } else {
         renderText(ecran, "Profile Picture Selection Failed", font, error_color, 678, 662);
         SDL_Flip(ecran);
-        SDL_Delay(2000);
+        SDL_Delay(1000);
     }
 }
 
@@ -423,7 +423,7 @@ bool saveGame(const char *filename, int score, int health, int energy, int level
     return true;
 }
 
-void loadGame(const char *filename, Person *player, int *level, int *collectibles, const user *currentUser) {
+bool loadGame(const char *filename, Person *player, int *level, int *collectibles, const user *currentUser) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
         fprintf(stderr, "Unable to open file for loading\n");
@@ -434,24 +434,33 @@ void loadGame(const char *filename, Person *player, int *level, int *collectible
     char username[256], password[256];
     int score, num_hearts, energy, file_level, file_collectibles;
 
+    // Initialize variables to track the last found user's data
+    int found = 0;
+
     // Iterate through each line of the file
     while (fgets(line, sizeof(line), file) != NULL) {
         // Parse the line to extract the username, password, and game data
         if (sscanf(line, "%255s\t%255s\t%d\t%d\t%d\t%d\t%d", username, password, &score, &num_hearts, &energy, &file_level, &file_collectibles) == 7) {
             // Check if the username and password match the current user's credentials
             if (strcmp(username, currentUser->username) == 0 && strcmp(password, currentUser->password) == 0) {
-                // Load the user's game data
+                // Store the user's game data but do not break; continue searching
                 player->score = score;
                 player->num_hearts = num_hearts;
                 player->energy = energy;
                 *level = file_level;
                 *collectibles = file_collectibles;
-                break; // Stop searching after finding the user's data
+                found = 1;
             }
         }
     }
 
     fclose(file);
+
+    if (!found) {
+        printf("User data not found in save file.\n");
+        return false;
+    }
+    return true;
 }
 
 
@@ -463,15 +472,15 @@ void freeButton(Button *button) {
 
 int handle_pause_menu(SDL_Event event, SDL_Surface * ecran,Person *player ,int level, int collected,user * US){
         Button resume,save_exit,exit;
-        SDL_Surface*  backg=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/src/login_sns_tn.png");
+        SDL_Surface*  backg=IMG_Load("3.png");
             if(!backg){
                     printf("Error loading pause menu background\n");
             }
 
 
-        init_btn(&resume,"/home/aziz/Desktop/Digital_Intrusion/src/continue_0.png","/home/aziz/Desktop/Digital_Intrusion/src/continue-1.png",822,210);
-        init_btn(&save_exit,"/home/aziz/Desktop/Digital_Intrusion/src/save_ex_0.png","/home/aziz/Desktop/Digital_Intrusion/src/save_ex_1.png",822,447);
-        init_btn(&exit,"/home/aziz/Desktop/Digital_Intrusion/src/exit_0.png","/home/aziz/Desktop/Digital_Intrusion/src/exit_1.png",822,668);
+        init_btn(&resume,"src/resume_0.png","src/resume_1.png",822,210);
+        init_btn(&save_exit,"src/save_0.png","src/save_1.png",822,447);
+        init_btn(&exit,"src/quit_0.png","src/quit_1.png",822,668);
         int running=1;
         while(running){
             SDL_BlitSurface(backg,NULL,ecran,NULL);
@@ -536,25 +545,25 @@ freeButton(&exit);
 
 
 int Handle_PP(SDL_Event event, SDL_Surface *ecran, user *us) {
-    SDL_Surface *backg = IMG_Load("/home/aziz/Desktop/Digital_Intrusion/pfp/side_menu_pfp.png"); 
+    SDL_Surface *backg = IMG_Load("pfp/menu.png"); 
     Button PFP1, PFP2, PFP3;
-    init_btn(&PFP1, "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp1.png", "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp0.png", 1342, 56);
-    init_btn(&PFP2, "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp1.png", "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp0.png", 1342, 336);
-    init_btn(&PFP3, "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp1.png", "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp0.png", 1342, 616);
+    init_btn(&PFP1, "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp_1_0.png", "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp_1_1.png", 1342, 125);
+    init_btn(&PFP2, "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp_2_0.png", "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp_2_1.png", 1342, 361);
+    init_btn(&PFP3, "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp_3_0.png", "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp_3_1.png", 1342, 616);
     
-    char PFP1_Path[MAX_CREDENTIAL_LENGTH] = "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp1.png";
-    char PFP2_Path[MAX_CREDENTIAL_LENGTH] = "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp1.png";
-    char PFP3_Path[MAX_CREDENTIAL_LENGTH] = "/home/aziz/Desktop/Digital_Intrusion/pfp/pfp1.png";
+    char PFP1_Path[MAX_CREDENTIAL_LENGTH] = "pfp/pfp_1_0.png";
+    char PFP2_Path[MAX_CREDENTIAL_LENGTH] = "pfp/pfp_2_0.png";
+    char PFP3_Path[MAX_CREDENTIAL_LENGTH] = "pfp/pfp_3_0.png";
     char IMG_Path[MAX_CREDENTIAL_LENGTH] = "pfp/";
 
-    SDL_Color active_color = {255, 0, 0}; // Red color for active input
+    SDL_Color active_color = {169,169, 169}; // Red color for active input
     TTF_Font *font = TTF_OpenFont("/home/aziz/Desktop/Backup/Digital_Intrusion/arial.ttf", 50);
     if (!font) {
         fprintf(stderr, "Unable to open font: %s\n", TTF_GetError());
         return -1;
     }
 
-    SDL_Color color = {0, 0, 0}; // Black color
+    SDL_Color color = {255, 255, 255}; // Black color
     SDL_Rect pos_SideBar = {1312, 0, 608, 1080};
     int running = 1;
     int valid_image = 0; // Flag to check if a valid image is selected
@@ -593,7 +602,7 @@ int Handle_PP(SDL_Event event, SDL_Surface *ecran, user *us) {
                         printf("ERROR: Invalid path or failed to load profile picture\n");
                         renderText(ecran, "ERROR: Invalid path", font, active_color, 1342, 1050);
                         SDL_Flip(ecran);
-                        SDL_Delay(2000);
+                        SDL_Delay(1000);
                     } else {
                         valid_image = 1;
                         running = 0;
@@ -638,5 +647,203 @@ int Handle_PP(SDL_Event event, SDL_Surface *ecran, user *us) {
     freeButton(&PFP2);
     freeButton(&PFP3);
     return valid_image;
+}
+/*=========================================*/
+
+int handle_Profile_menu(SDL_Event event, SDL_Surface * ecran){
+        Button pf;
+        SDL_Surface*  backg=IMG_Load("for ts/smn__profiles.png");
+            if(!backg){
+                    printf("Error loading  Profiles menu background pause menu background\n");
+            }
+
+
+
+        init_btn(&pf,"for ts/pfp_btn_0.png","for ts/pfp_btn_1.png",1546,43);
+        SDL_Rect posBack={1308,0,backg->w,backg->h};        
+        int running=1;
+        while(running){
+
+            SDL_BlitSurface(backg,NULL,ecran,&posBack);
+            blitButton(ecran,&pf,event);
+            show_high_score(ecran);
+            SDL_Flip(ecran);
+            while(SDL_PollEvent(&event)){
+                    if(event.type == SDL_QUIT){
+                            running=0;
+                            SDL_FreeSurface(backg);
+                            SDL_Quit();
+                    }
+            if(isButtonClicked(&event,&pf.pos)){
+              running=0;
+                return 1;
+
+            }
+
+            if(event.key.keysym.sym == SDLK_ESCAPE){
+                   running=0;
+                 return 0;
+            }
+
+            }
+        }
+freeButton(&pf);
+SDL_FreeSurface(backg);
+}
+
+#define MAX_USERS 100
+
+
+
+
+void loadTopUsers(user *users, int *count) {
+    FILE *file = fopen("Saves.txt", "r");
+    if (file == NULL) {
+        fprintf(stderr, "Unable to open saves file\n");
+        return;
+    }
+
+    char line[512];
+    int score, num_hearts, energy, level, collectibles;
+
+    while (fgets(line, sizeof(line), file) != NULL && *count < 3) {
+        if (sscanf(line, "%255s\t%255s\t%d\t%d\t%d\t%d\t%d", users[*count].username, users[*count].password, &score, &num_hearts, &energy, &level, &collectibles) == 7) {
+            users[*count].pfp = NULL; // Will be set later
+            users[*count].score = score;
+            (*count)++;
+        }
+    }
+
+    fclose(file);
+}
+
+void loadProfilePictures(user *users, int count) {
+    FILE *file = fopen("users.txt", "r");
+    if (file == NULL) {
+        fprintf(stderr, "Unable to open users file\n");
+        return;
+    }
+
+    char line[512];
+    char username[256], password[256], pfp_path[256];
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (sscanf(line, "%255s\t%255s\t%255s", username, password, pfp_path) == 3) {
+            for (int i = 0; i < count; i++) {
+                if (strcmp(users[i].username, username) == 0) {
+                    strcpy(users[i].pfp_path, pfp_path);
+                    users[i].pfp = IMG_Load(users[i].pfp_path);
+                    if (!users[i].pfp) {
+                        fprintf(stderr, "Unable to load profile picture: %s\n", users[i].pfp_path);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    fclose(file);
+}
+
+void renderTopUsersWithPictures(SDL_Surface *ecran, TTF_Font *font, user *users, int count) {
+    // Sort the users by score in descending order
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - i - 1; j++) {
+            if (users[j].score < users[j + 1].score) {
+                user temp = users[j];
+                users[j] = users[j + 1];
+                users[j + 1] = temp;
+            }
+        }
+    }
+
+    SDL_Rect Pos1={960,200,50,50};
+    SDL_Rect Pos2={960,400,50,50};
+    SDL_Rect Pos3={960,600,50,50};
+
+    // Render the top 3 users with profile pictures
+    SDL_Color color = {255, 255, 255}; // White color
+   // for (int i = 0; i < 3 && i < count; i++) {
+       // int yOffset = 200 + i * 150; // Adjust vertical spacing as needed
+
+        // Load and render the profile picture
+        //SDL_Rect dstRect = {50,yOffset, 0, 0}; // Adjust positions as needed
+            SDL_BlitSurface(users[0].pfp, NULL, ecran, &Pos1);
+            SDL_BlitSurface(users[1].pfp, NULL, ecran, &Pos2);
+            SDL_BlitSurface(users[2].pfp, NULL, ecran, &Pos3);
+
+        
+
+        // Render the username
+        renderText(ecran, users[0].username, font, color, 150, 200);
+        renderText(ecran, users[1].username, font, color, 150, 400);
+        renderText(ecran, users[2].username, font, color, 150, 600);
+
+
+        // Render the score below the username
+        char scoreText1[256],scoreText2[256],scoreText3[256];
+        snprintf(scoreText1, sizeof(scoreText1), "%d", users[0].score);
+        snprintf(scoreText2, sizeof(scoreText2), "%d", users[1].score);
+        snprintf(scoreText3, sizeof(scoreText3), "%d", users[2].score);
+
+        renderText(ecran, scoreText1, font, color, 150, 200);
+        renderText(ecran, scoreText2, font, color, 150, 200);
+        renderText(ecran, scoreText3, font, color, 150, 200);
+    //}
+}
+
+int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
+    // Load background
+    SDL_Surface* backg = IMG_Load("/home/aziz/Desktop/Digital_Intrusion/3.png");
+    if (!backg) {
+        printf("Error loading Profiles menu background\n");
+        return -1;
+    }
+
+    // Initialize button
+    Button pf;
+    init_btn(&pf, "for ts/pfp_btn_0.png", "for ts/pfp_btn_1.png", 1546, 43);
+
+   // SDL_Rect posBack = {1308, 0, backg->w, backg->h};        
+
+    // Initialize font
+    TTF_Font *font = TTF_OpenFont("/home/aziz/Desktop/Backup/Digital_Intrusion/arial.ttf", 24);
+    if (!font) {
+        printf("Error loading font: %s\n", TTF_GetError());
+        SDL_FreeSurface(backg);
+        return -1;
+    }
+
+    // Load users and their scores
+    user users[100];
+    int count = 0;
+    loadTopUsers(users, &count);
+    loadProfilePictures(users, count);
+
+    // Main loop
+    int running = 1;
+    while (running) {
+        SDL_BlitSurface(backg, NULL, ecran, NULL);
+       
+       renderTopUsersWithPictures(ecran, font, users, count);
+
+        SDL_Flip(ecran);
+
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = 0;
+            }
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+                running = 0;
+            }
+          
+        }
+    }
+
+    // Cleanup
+    SDL_FreeSurface(backg);
+    TTF_CloseFont(font);
+
+    return 0;
 }
 

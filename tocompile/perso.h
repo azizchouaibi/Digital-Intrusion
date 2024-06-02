@@ -10,12 +10,15 @@
 #include <math.h>
 #define ground 500
 
-#define SPRITE_WIDTH 34
+/*#define SPRITE_WIDTH 34
 #define SPRITE_HEIGHT 34
 #define NUM_FRAMES 3
+#define NUM_DIRECTIONS 4 */
+
+#define SPRITE_WIDTH 50
+#define SPRITE_HEIGHT 48
+#define NUM_FRAMES 3
 #define NUM_DIRECTIONS 4 
-
-
 
 
 

@@ -1,3 +1,5 @@
-*user *pass /home/aziz/Desktop/Digital_Intrusion/pfp/pfp1.png
-*asba *asba pfp/pfp1.png
-*ammouha *1234 /home/aziz/Desktop/Digital_Intrusion/pfp/pfp1.png
+
+
+*user *pass pfp/pfp_2_0.png
+*aziz *admin pfp/pfp_2_0.png
+*aziz *pass pfp/pfp_3_0.png

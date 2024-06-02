@@ -8,6 +8,8 @@
 #define dx 150
 #define dy 150
 #define  COLLISION_RESET_TIME 3000
+#define MAX_FRAMES    3
+#define MAX_DIRECTIONS 4
 
 void loadPlayerSpriteSheet(Person *p1, const char *filename) {
     SDL_Surface *spriteSheet = IMG_Load(filename);
@@ -42,7 +44,27 @@ void loadPlayerSpriteSheet(Person *p1, const char *filename) {
 }
 
 
-void renderPlayerFrame(Person *p1, SDL_Surface *screen) {
+void renderPlayerFrame(Person *p1, SDL_Surface *ecran) {
+      // Check if p1 and screen are not NULL
+    if (p1 == NULL || ecran == NULL) {
+        printf("Error: Null pointer passed to renderPlayerFrame.\n");
+        return;
+    }
+
+    // Check if p1->spriteSheet is not NULL
+    if (p1->spriteSheet == NULL) {
+        printf("Error: spriteSheet is NULL in renderPlayerFrame.\n");
+        return;
+    }
+
+    // Check if direction and frame are within valid range
+    if (p1->direction < 0 || p1->direction >= MAX_DIRECTIONS ||
+        p1->frame < 0 || p1->frame >= MAX_FRAMES) {
+        printf("Error: Invalid direction or frame in renderPlayerFrame.\n");
+        return;
+    }
+
+
     SDL_Rect dest;
     dest.x = p1->posinit.x ;
     dest.y = p1->posinit.y;
@@ -51,7 +73,7 @@ void renderPlayerFrame(Person *p1, SDL_Surface *screen) {
            
 
     // Render frame for the current direction
-    SDL_BlitSurface(p1->spriteSheet,&p1->frameClips[p1->direction][p1->frame], screen, &dest);
+    SDL_BlitSurface(p1->spriteSheet,&p1->frameClips[p1->direction][p1->frame],ecran, &dest);
 }
 
 void deplacerEntite_MULTIJOUEUR(Person P, Entity *Dot, SDL_Rect playZone) {

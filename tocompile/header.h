@@ -39,6 +39,7 @@ typedef	struct
 	char password[256];
 	char pfp_path[256];
 	SDL_Surface * pfp;
+	int score;
 }user;
 
 
@@ -67,6 +68,6 @@ Button* loadoptions(SDL_Surface *ecran, SDL_Surface *backg, SDL_Rect posopt); //
 bool backspace(SDL_Event );
 bool sauvegarde_score(Uint32 score,const char *filename);
 int best_score(const char *filename);
-void show_high_score(SDL_Surface * ecran, SDL_Surface *SurfText);
+void show_high_score(SDL_Surface * ecran);
 
 #endif

@@ -356,48 +356,52 @@ bool sauvegarde_score(Uint32 score,const char *filename) {
 }
 
 int best_score(const char *filename) {
-	FILE* fich=NULL;
-	fich = fopen(filename,"r");
-	int high_score=0,current_score;
-	
-	
-	if ( fich==NULL) {
-		printf("ERROR LOADING SCORE FILE (HIGHEST SCORE) \n");
-		return 0;
-		} else {
-			while (fscanf(fich,"%d\n",&current_score) == 1 ) {
-					if ( current_score > high_score) {
-						high_score=current_score;
-					}
-				}
-			fclose(fich);
-			return high_score;
-		}
-	}
-	
-				
-void show_high_score(SDL_Surface * ecran, SDL_Surface *SurfText) {
-	int score= best_score("score.txt");
-		char * high=malloc(10 * sizeof(char));
-		TTF_Font *font;
-		SDL_Color txtcolor;
-		SDL_Rect postxtEcran;
-		sprintf(high,"Best Score : %d",score);
-		postxtEcran.x=100;
-		postxtEcran.y=950;
-		txtcolor.r=255;
-		txtcolor.g=0;
-		txtcolor.b=0;
-		font =TTF_OpenFont("FOnt.ttf",50);
-			if (!font) {
-				printf("ERROR LOADING FONT FOR HUGH SCORE\n");
-			}
-			SurfText=TTF_RenderText_Solid(font,high,txtcolor);
-				if ( SurfText ==NULL){
-					printf("ERROR LOADING TEXT SURFACE FOR HIGHEST SCORE\n");
-				}
-SDL_BlitSurface(SurfText,NULL,ecran,&postxtEcran);
+    FILE* fich = fopen(filename, "r");
+    if (fich == NULL) {
+        printf("ERROR LOADING SCORE FILE (HIGHEST SCORE)\n");
+        return 0;
+    }
+
+    int high_score = 0, current_score;
+    while (fscanf(fich, "%d\n", &current_score) == 1) {
+        if (current_score > high_score) {
+            high_score = current_score;
+        }
+    }
+
+    fclose(fich);
+    return high_score;
 }
+
+				
+void show_high_score(SDL_Surface *ecran) {
+    int score = best_score("score.txt");
+
+    char high[50];
+    sprintf(high, "Best Score: %d", score);
+
+    TTF_Font *font = TTF_OpenFont("FOnt.ttf", 50);
+    if (!font) {
+        printf("ERROR LOADING FONT FOR HIGH SCORE: %s\n", TTF_GetError());
+        return;
+    }
+
+    SDL_Color txtcolor = {255,255,255};
+    SDL_Surface *SurfText = TTF_RenderText_Solid(font, high, txtcolor);
+    if (SurfText == NULL) {
+        printf("ERROR LOADING TEXT SURFACE FOR HIGHEST SCORE: %s\n", TTF_GetError());
+        TTF_CloseFont(font);
+        return;
+    }
+
+    SDL_Rect postxtEcran = {1409,948, 0, 0};
+    SDL_BlitSurface(SurfText, NULL, ecran, &postxtEcran);
+    SDL_Flip(ecran);
+
+    SDL_FreeSurface(SurfText);
+    TTF_CloseFont(font);
+}
+
 
 
 

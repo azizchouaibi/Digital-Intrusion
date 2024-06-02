@@ -232,7 +232,9 @@ Lazer_drone = InitEntity("anim perso test/lazer_drone.png",0 ,0, 0);
 Drone.state = 1;
 Button Load_btn;
 init_btn(&Load_btn,"for ts/load_1.png","for ts/load_0.png",650,721);
-
+Button Profiles_btn,Arrow__menu_btn;
+init_btn(&Profiles_btn,"for ts/pfp_btn_0.png","for ts/pfp_btn_1.png",1546,43);
+init_btn(&Arrow__menu_btn,"for ts/arrow_0.png","for ts/arrow_1.png",1753,210);
  int scoresP1[3], scoresP2[3];
 SDL_Rect PlPvPos;
 /////////
@@ -389,8 +391,8 @@ if (manette ==1) {
 	p2.score=0;
 	SDL_Rect PlaySpace1 = {1130,170 , 627 , 733};
 	SDL_Rect PlaySpace2 = {170 , 170 ,627 , 733 };
-loadPlayerSpriteSheet(&p1, "yosri.png");
- loadPlayerSpriteSheet(&p2, "emna.png");					
+loadPlayerSpriteSheet(&p1,"anim perso test/p1.png");
+loadPlayerSpriteSheet(&p2,"anim perso test/p2.png");					
  bool p1r=false,p1l=false,p1u=false,p1d=false;
 bool p2r=false,p2l=false,p2u=false,p2d=false;
       SDL_Rect PosScoreP2 = {1750,20,50,50};
@@ -422,6 +424,8 @@ while (gameloop) {
 								chose=1;
 						}else {
 								gameloop=false;
+
+
 						}
 				} else if(chose ==0 && num_j==2) {
 						mainmenu=true;
@@ -441,7 +445,7 @@ gameover=false;
 
 SDL_BlitSurface(imgmenu, NULL, ecran, &posimg);
 if ( num_j==1) {
-show_high_score(imgmenu,surft);
+//show_high_score(imgmenu);
 } else if (num_j==2) {
 	Blit_Top_Scores("score_MP", scoresP1, scoresP2);
 	High_SCORE_MP(ecran, SurfText, scoresP1, 3, 1000, 200); 
@@ -485,7 +489,17 @@ if ( event.motion.x >=  0 && event.motion.x <= 640 )  {
 
 
 
+blitButton(ecran,&Arrow__menu_btn);		
+	if(isButtonClicked(&event,&Arrow__menu_btn.pos)){
+				printf("PROFILES MENU\n");
+					if(handle_Profile_menu(event,ecran) ==1){
+							printf("PROFILE MENU ACCESSED\n");
+							Profile_Menu( event, ecran);
 
+			} else {
+///
+				}
+		}	
 }
 
 
@@ -520,7 +534,7 @@ if ( nbytes >0) {
 }
 } 
 }
-			
+
 SDL_Flip(ecran);
 
 
@@ -528,7 +542,7 @@ SDL_Flip(ecran);
 //LECTURE DE CLAVIER :
 	while (SDL_PollEvent(&event)!=0) {
 		
-		
+	
 		switch(event.type) {	
 			case SDL_KEYDOWN:
 			switch(event.key.keysym.sym) {
@@ -769,9 +783,14 @@ if (optionmenu==true ){
 							}
 
 						if(isButtonClicked(&event,&Load_btn.pos)){
-								loadGame("Saves.txt",&player,&indlvl,&collected,&Current_User);
+							if(	loadGame("Saves.txt",&player,&indlvl,&collected,&Current_User)){
 								Playing=true;
 								playS=false;
+							}else{
+							 renderText(ecran, "This user doesnt have any saves", font, Color, 500, 900);
+							 SDL_Flip(ecran);
+							 SDL_Delay(1000);
+							}
 						}
 
 
@@ -969,13 +988,21 @@ playS=false;
 					afficherminimap(TabMap[indlvl-1], ecran);
 				}
 				}else  if (num_j ==2){ // si il ya 2 joueur // MULTIPLAYER
+						printf("ok\n");
 						        Uint32 currentTime_P1 = SDL_GetTicks();
+						        						printf("ok\n");
+
 						    	Uint32 currentTime_P2 = SDL_GetTicks();
 						    	printf("TIME %d ", currentTime_P1/1000);
 			 	SDL_BlitSurface(bg1.image, NULL, ecran, &PLAYER1_ZONE);
+			 							printf("ok\n");
+
 			 	SDL_BlitSurface(bg2.image, NULL, ecran, &PLAYER2_ZONE);
-			 	renderPlayerFrame(&p1,ecran);
-        		renderPlayerFrame(&p2,ecran);
+			 							printf("ok\n");
+			
+			 							printf("ok\n");
+			 	        								printf("ok\n");
+
         		Deplacer_ET_NON_COLLISION(&p1, &DotP1, PlaySpace1, &lastMoveTime_P1, currentTime_P1, moveInterval);
 				Deplacer_ET_NON_COLLISION(&p2, &DotP2, PlaySpace2, &lastMoveTime_P2, currentTime_P2, moveInterval);
         		afficherES(ecran,DotP1);
@@ -989,6 +1016,9 @@ playS=false;
       afficher_score(p2.score,&PosTxt,&SurfText_P1 ,font ,txtCoul );
       SDL_BlitSurface(SurfText_P1,NULL,ecran,&PosTxt);
       SDL_BlitSurface(SurfText_P2,NULL,ecran,&PosScoreP2);
+      renderPlayerFrame(&p1,ecran);
+      renderPlayerFrame(&p2,ecran);
+
       if ( timer(currentTime_P1 ,font, PosVie_P1,ecran) == 0) {handleMPGameState (p1.score , p2.score ,PLAYER1_ZONE,PLAYER2_ZONE ,  ecran,&mainmenu,&Playing);}
 
         SDL_Flip(ecran); // Update screen
@@ -1168,6 +1198,7 @@ playS=false;
                     	p2r=true;
                     break;
                     	
+
                 }
             } else if (event.type == SDL_KEYUP) {
                 switch (event.key.keysym.sym) {
