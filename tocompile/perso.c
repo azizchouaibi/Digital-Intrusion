@@ -76,6 +76,82 @@ Person  InitPerso(Person  player ) {
     	
 		
 }
+
+Person  InitPersoSecondOutfit(Person  player ) {
+	int i;
+	
+	
+	for (i=0;i<16;i++) {
+		player.texture[i]=NULL;
+	}
+	
+	player.texture[0]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_1.png");
+	player.texture[1]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_2.png");
+	player.texture[2]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_3.png");
+	player.texture[3]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_4.png");
+	player.texture[4]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_5.png");
+	player.texture[5]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_L1.png");
+	player.texture[6]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_L2.png");
+	player.texture[7]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_L3.png");
+	player.texture[8]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_L4.png");
+	player.texture[9]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_L5.png");
+	player.texture[10]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_J1.png");
+	player.texture[11]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_J1.png");
+	player.texture[12]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_JL1.png");
+	player.texture[13]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_JL1.png");
+	player.texture[14]=IMG_Load("anim perso test/dmg.png");
+	player.texture[15]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/Skin2/Y_Slide.png");
+	
+	
+	
+	
+	for (i=0;i<16;i++) {
+		if (player.texture[i]==NULL) {
+			printf("ERREUR LODING IMAGE n %d\n",i);
+		} 
+		
+	}
+	
+	
+	
+	player.num_hearts=3;
+	player.textcourant=0;
+	player.acc = -0.1;
+	
+	for (i=0 ; i < player.num_hearts ; i++) {
+		player.vie[i]=NULL;
+	}
+		
+	player.vie[0]=IMG_Load("anim perso test/h1.png");
+	player.vie[1]=IMG_Load("anim perso test/h2.png");
+	player.vie[2]=IMG_Load("anim perso test/h3.png");
+	
+	for ( i =0 ; i<player.num_hearts ; i++) {
+		if ( player.vie[i]==NULL) {
+			printf("ERROR LOADING VIE n %d\n",i);
+		}
+	}
+	
+	player.posinit.x = 200; // a changer
+   	player.posinit.y = ground;
+   	
+    	player.posvie.x=1596;
+    	player.posvie.y=50;
+  player.dx=20;
+	player.energy=100;
+	player.score=0;
+	
+	//player.dmg=IMG_Load("/home/aziz/Desktop/Integration/anim perso test/dmg.png");
+	
+    	
+		
+
+
+    	return player;
+    	
+		
+}
+
 	
 void afficherPerso(Person * player, SDL_Surface * ecran) {
 	SDL_BlitSurface(player->texture[player->textcourant],NULL,ecran,&player->posinit);

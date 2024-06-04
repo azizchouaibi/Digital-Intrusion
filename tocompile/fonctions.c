@@ -726,9 +726,72 @@ void handleGameWin(SDL_Surface *ecran, bool *mainmenu, Mix_Music *MenuMusic) {
     *mainmenu = true;
 }
 
+
+void saveGameTime(const char* filename, Uint32 gameTime) {
+    FILE* file = fopen(filename, "a+");
+    if (!file) {
+        printf("Error opening file for writing\n");
+        return;
+    }
+
+    fprintf(file, "%u\n", gameTime);
+
+    fclose(file);
+}
 	
 	
 			
+Uint32 loadGameTime(const char* filename) {
+    Uint32 gameTime = 0;
+
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Error opening file for reading\n");
+        return 0;
+    }
+
+    fscanf(file, "%u", &gameTime);
+
+    fclose(file);
+
+    return gameTime;
+}
+
+Uint32 getTimeDifference(Uint32 startTime, Uint32 endTime) {
+    // Calculate the difference between endTime and startTime
+    return endTime - startTime;
+}
+void findMinMaxGameTimes(const char* filename, uint32_t* minTime, uint32_t* maxTime) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Error opening file for reading\n");
+        return;
+    }
+
+    uint32_t gameTime;
+    *minTime = UINT32_MAX;
+    *maxTime = 0;
+
+    while (fscanf(file, "%u", &gameTime) == 1) {
+        if (gameTime < *minTime) {
+            *minTime = gameTime;
+        }
+        if (gameTime > *maxTime) {
+            *maxTime = gameTime;
+        }
+    }
+
+    fclose(file);
+}
 
 
+void formatTime(Uint32 milliseconds, char* formattedTime) {
+    Uint32 seconds = milliseconds / 1000;
+    Uint32 minutes = seconds / 60;
+    Uint32 hours = minutes / 60;
 
+    seconds %= 60;
+    minutes %= 60;
+
+    snprintf(formattedTime, 256, "%02u:%02u:%02u:%03u", hours, minutes, seconds, milliseconds % 1000);
+}

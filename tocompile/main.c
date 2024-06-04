@@ -196,6 +196,8 @@ initTictactoe(&t);
 	initialiser_back(&back);
 	initialiser_rotozoom(&z);
 bool tcc_won=false;
+bool choose_skin=false;
+
 ////////////////
 //VAR POUR ENIGME /////
 SDL_Color Color = {255, 255, 255};
@@ -231,7 +233,10 @@ Drone = InitEntity("drone.png", 1925 , 100 , -5);
 Lazer_drone = InitEntity("anim perso test/lazer_drone.png",0 ,0, 0);
 Drone.state = 1;
 Button Load_btn;
-init_btn(&Load_btn,"for ts/load_1.png","for ts/load_0.png",650,721);
+init_btn(&Load_btn,"for ts/load_1.png","for ts/load_0.png",294,721);
+Button change_outfit;
+init_btn(&change_outfit,"Skin2/chng_0.png","Skin2/chng_1.png",1196,721);
+
 Button Profiles_btn,Arrow__menu_btn;
 init_btn(&Profiles_btn,"for ts/pfp_btn_0.png","for ts/pfp_btn_1.png",1546,43);
 init_btn(&Arrow__menu_btn,"for ts/arrow_0.png","for ts/arrow_1.png",1753,210);
@@ -302,8 +307,11 @@ Background TabBack[3];
 							               bool final_boss = false;
 
 Person player;
+Person player_SecondOutfit;
 	 player=InitPerso(player);
+	 player_SecondOutfit=InitPersoSecondOutfit(player_SecondOutfit);
 
+//player=player_SecondOutfit;
 	
 font=TTF_OpenFont("FOnt.ttf",50);
 		if( font == NULL) {
@@ -416,6 +424,8 @@ SDL_Rect poslazer;
 	SDL_Rect camera = {0, 0, 1024, 768};
 int chose=0; // variable for login/signup
 user Current_User;
+Uint32 Global_startTime = SDL_GetTicks();
+
 while (gameloop) {
 			if (num_j==0) {handleGameMode(&num_j,ecran);}
 				if(chose ==0 && num_j==1 ) {
@@ -447,9 +457,9 @@ SDL_BlitSurface(imgmenu, NULL, ecran, &posimg);
 if ( num_j==1) {
 //show_high_score(imgmenu);
 } else if (num_j==2) {
-	Blit_Top_Scores("score_MP", scoresP1, scoresP2);
-	High_SCORE_MP(ecran, SurfText, scoresP1, 3, 1000, 200); 
-    High_SCORE_MP(ecran, SurfText, scoresP2, 3, 1000, 400);
+	//Blit_Top_Scores("score_MP", scoresP1, scoresP2);
+	//High_SCORE_MP(ecran, SurfText, scoresP1, 3, 1000, 200); 
+   // High_SCORE_MP(ecran, SurfText, scoresP2, 3, 1000, 400);
 }
 	
 
@@ -743,10 +753,12 @@ if (optionmenu==true ){
 
 		
 
-
 			if ( playS) {
-				if ( num_j==2 ) {indlvl=1;Playing=true;playS=false;}	
+				if ( num_j==2 ) {indlvl=1;Playing=true;playS=false;}
+						
+							
 					SDL_BlitSurface(seleclevel,NULL,ecran,&posimg);
+					 blitButton(ecran,&change_outfit,event);
 					 blitButton(ecran,&Load_btn,event);
 					while ( SDL_PollEvent(&event)){
 						switch(event.type) {
@@ -791,6 +803,16 @@ if (optionmenu==true ){
 							 SDL_Flip(ecran);
 							 SDL_Delay(1000);
 							}
+						}
+						if(isButtonClicked(&event,&change_outfit.pos)) {
+									playS=false;
+								if(handle_SkinSelection(event,ecran,player,player_SecondOutfit)==1){
+									player=player_SecondOutfit;
+									playS=true;
+								}else{
+									playS=true;
+	
+								}
 						}
 
 
@@ -1847,7 +1869,9 @@ if (gameover==true) {
 				//}//FIN PLAY
 			
 			} // FIN gameloop;
-			
+			Uint32 Global_endTime = SDL_GetTicks();
+			Uint32 totalPlayTime = getTimeDifference(Global_startTime,Global_endTime);
+			saveGameTime("gameTime.txt",totalPlayTime);
 			
 			//SAUVEGARDE DU SCORE
 			if ( num_j==1) {
@@ -1881,6 +1905,7 @@ if (gameover==true) {
 
 	for( int p=0 ; p < 16 ; p++) {
 		SDL_FreeSurface(player.texture[p]);
+		SDL_FreeSurface(player_SecondOutfit.texture[p]);
 		}
 		for ( int s=0 ; s < 3 ; s++) {
 			SDL_FreeSurface(TabBack[indlvl-1].image);
@@ -1954,6 +1979,7 @@ if (gameover==true) {
     SDL_FreeSurface(m2.img_es);
     SDL_FreeSurface(m3.img_es);
     freeButton(&Load_btn);
+    freeButton(&change_outfit);
     SDL_FreeSurface(lazer);
     SDL_FreeSurface(ecran);
     SDL_FreeSurface(imgmenu);

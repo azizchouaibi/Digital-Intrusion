@@ -489,7 +489,7 @@ int handle_pause_menu(SDL_Event event, SDL_Surface * ecran,Person *player ,int l
             blitButton(ecran,&exit,event);
             SDL_Flip(ecran);
             while(SDL_PollEvent(&event)){
-                    if(event.type == SDL_QUIT){
+                    if(event.key.keysym.sym == SDLK_ESCAPE){
                             running=0;
                             SDL_FreeSurface(backg);
                             SDL_Quit();
@@ -756,10 +756,14 @@ void renderTopUsersWithPictures(SDL_Surface *ecran, TTF_Font *font, user *users,
             }
         }
     }
-
-    SDL_Rect Pos1={960,200,50,50};
-    SDL_Rect Pos2={960,400,50,50};
-    SDL_Rect Pos3={960,600,50,50};
+    Button N1,N2,N3;
+    SDL_Event event;
+    init_btn(&N1,"src/1(1).png","src/1(1).png",166,14);
+    init_btn(&N2,"src/2.png","src/2.png",166,322);
+    init_btn(&N3,"src/3.png","src/3.png",166,630);
+    SDL_Rect Pos1={91,70,50,50};
+    SDL_Rect Pos2={91,378,50,50};
+    SDL_Rect Pos3={91,686,50,50};
 
     // Render the top 3 users with profile pictures
     SDL_Color color = {255, 255, 255}; // White color
@@ -771,13 +775,16 @@ void renderTopUsersWithPictures(SDL_Surface *ecran, TTF_Font *font, user *users,
             SDL_BlitSurface(users[0].pfp, NULL, ecran, &Pos1);
             SDL_BlitSurface(users[1].pfp, NULL, ecran, &Pos2);
             SDL_BlitSurface(users[2].pfp, NULL, ecran, &Pos3);
+             blitButton(ecran,&N1,event);
+            blitButton(ecran,&N2,event);
+             blitButton(ecran,&N3,event);
 
         
 
         // Render the username
-        renderText(ecran, users[0].username, font, color, 150, 200);
-        renderText(ecran, users[1].username, font, color, 150, 400);
-        renderText(ecran, users[2].username, font, color, 150, 600);
+        renderText(ecran, users[0].username+1, font, color, 313, 73);
+        renderText(ecran, users[1].username+1, font, color, 313, 366);
+        renderText(ecran, users[2].username+1, font, color, 313, 674);
 
 
         // Render the score below the username
@@ -786,10 +793,29 @@ void renderTopUsersWithPictures(SDL_Surface *ecran, TTF_Font *font, user *users,
         snprintf(scoreText2, sizeof(scoreText2), "%d", users[1].score);
         snprintf(scoreText3, sizeof(scoreText3), "%d", users[2].score);
 
-        renderText(ecran, scoreText1, font, color, 150, 200);
-        renderText(ecran, scoreText2, font, color, 150, 200);
-        renderText(ecran, scoreText3, font, color, 150, 200);
+        renderText(ecran, scoreText1, font, color, 340, 136);
+        renderText(ecran, scoreText2, font, color, 340, 444);
+        renderText(ecran, scoreText3, font, color, 340, 752);
     //}
+         Uint32 minTime;
+             Uint32 maxTime;
+
+                char minTimeText[256];
+                char maxTimeText[256];
+             findMinMaxGameTimes("gameTime.txt", &minTime, &maxTime);
+            formatTime(minTime, minTimeText);
+            formatTime(maxTime, maxTimeText);
+char longestTimeText[256];
+snprintf(longestTimeText, sizeof(longestTimeText), "Longest Play time: %s", maxTimeText);
+renderText(ecran, longestTimeText, font, color, 50, 950);
+
+// Render the shortest play time
+char shortestTimeText[256];
+snprintf(shortestTimeText, sizeof(shortestTimeText), "Shortest Play time: %s", minTimeText);
+renderText(ecran, shortestTimeText, font, color, 50, 900);
+
+
+freeButton(&N1);freeButton(&N2);freeButton(&N3);
 }
 
 int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
@@ -801,13 +827,11 @@ int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
     }
 
     // Initialize button
-    Button pf;
-    init_btn(&pf, "for ts/pfp_btn_0.png", "for ts/pfp_btn_1.png", 1546, 43);
-
+  
    // SDL_Rect posBack = {1308, 0, backg->w, backg->h};        
 
     // Initialize font
-    TTF_Font *font = TTF_OpenFont("/home/aziz/Desktop/Backup/Digital_Intrusion/arial.ttf", 24);
+    TTF_Font *font = TTF_OpenFont("/home/aziz/Desktop/Backup/Digital_Intrusion/arial.ttf", 55);
     if (!font) {
         printf("Error loading font: %s\n", TTF_GetError());
         SDL_FreeSurface(backg);
@@ -846,4 +870,86 @@ int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
 
     return 0;
 }
+int handle_SkinSelection(SDL_Event event, SDL_Surface *ecran, Person P1, Person P2) {
+    SDL_Surface* backg = IMG_Load("/home/aziz/Desktop/Digital_Intrusion/3.png");
+    if (!backg) {
+        printf("Error loading Profiles menu background pause menu background\n");
+        return -1; // Handle the error appropriately
+    }
 
+    Button Next, Pred, Select; // Next for P2 and Pred for P1
+    init_btn(&Next, "Skin2/p2_1.png", "Skin2/P2_0.png", 499, 847); // Use appropriate images and positions
+
+    init_btn(&Pred, "Skin2/p1_1.png", "Skin2/p1_0.png", 337, 847);// Use appropriate images and positions
+
+    init_btn(&Select, "Skin2/select_0.png", "Skin2/select_1.png", 293, 200); // Use appropriate images and positions
+
+    SDL_Surface* Tab[2];
+    Tab[0] = IMG_Load("Skin2/aziz_front_view.png");
+    Tab[1] = IMG_Load("Skin2/yosri_front_view.png");
+
+    if (!Tab[0] || !Tab[1]) {
+        printf("ERROR LOADING SKIN FRONT VIEW\n");
+        if (Tab[0]) SDL_FreeSurface(Tab[0]);
+        if (Tab[1]) SDL_FreeSurface(Tab[1]);
+        SDL_FreeSurface(backg);
+        return -1; // Handle the error appropriately
+    }
+
+
+    int ind = 0;
+    int i = 0;
+    Uint32 lastTime = SDL_GetTicks();
+    SDL_Rect posP = {293, 118, backg->w, backg->h};
+    SDL_Rect posPreview = {1308, 118,200, 200};
+    int running = 1;
+
+    while (running) {
+        SDL_BlitSurface(backg, NULL, ecran, NULL);
+        blitButton(ecran, &Next, event);
+        blitButton(ecran, &Pred, event);
+        blitButton(ecran, &Select, event);
+        SDL_BlitSurface(Tab[ind], NULL, ecran, &posP);
+
+        Uint32 currentTime = SDL_GetTicks();
+        if (currentTime - lastTime > 100) {
+            lastTime = currentTime;
+            i = (i + 1) % 3; // Assuming there are 5 textures
+            }
+
+            if (ind == 0) {
+                SDL_BlitSurface(P1.texture[i], NULL, ecran, &posPreview);
+            } else if (ind == 1) {
+                SDL_BlitSurface(P2.texture[i], NULL, ecran, &posPreview);
+            }
+        
+
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = 0;
+            } else if (isButtonClicked(&event, &Next.pos)) {
+                ind = 1;
+            } else if (isButtonClicked(&event, &Pred.pos)) {
+                ind = 0;
+            } else if (isButtonClicked(&event, &Select.pos)) {
+                running = 0;
+                break;
+            } else if (event.key.keysym.sym == SDLK_ESCAPE) {
+                running = 0;
+                break;
+            }
+        }
+                SDL_Flip(ecran);
+
+    }
+
+    freeButton(&Next);
+    freeButton(&Pred);
+    freeButton(&Select);
+    SDL_FreeSurface(Tab[0]);
+    SDL_FreeSurface(Tab[1]);
+    SDL_FreeSurface(backg);
+
+    return ind;
+}
+    

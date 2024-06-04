@@ -52,7 +52,7 @@ typedef struct {
 
 
 Person  InitPerso(Person  player );
-
+Person  InitPersoSecondOutfit(Person  player ); 
 void afficherPerso(Person * player, SDL_Surface * ecran);
 void deplacerPerso(Person * player, int direction, int *currenttext);
 void animerPerso (Person * player , SDL_Surface * ecran, int *compt);
