@@ -11,8 +11,11 @@
 #define SCREEN_WIDTH 1920
 #define DAMAGE_COOLDOWN 2// 2 second
 #define ARDUINO_SERIAL_PORT "/dev/ttyACM0"  // notre port arduino
-
+#define SLIDE_DURATION 1000 // Duration in milliseconds
+#define JUMP_DURATION 800
 int main(){
+enum State gamestate;
+enum ControllerPlayerCommands command;
 
 
 int num_j=0;
@@ -25,8 +28,14 @@ scanf("%d",&manette);
 }while ( manette > 1 || manette < 0 /*|| num_j > 2 || num_j < 0*/ );
    // srand(time(NULL));
 				int collected=0;
+				Uint32 currentTime_P1;
+				bool startMPtimer=false;
+				int chose_MP=0;
 printf("=========STARTED=========\n");
-
+Uint32 jumpStartTime = 0;
+Uint32 slideStartTime = 0;
+bool sliding = false;
+bool jumping=false;
 //VARIABLES GLOABLES
 time_t lastDamageTime = 0; 
 SDL_Event event;
@@ -67,10 +76,11 @@ bool credit=false;
 Mix_Chunk * slideSFX;
 SDL_Surface *lazer;
 
-	
+	    int x = 0, y = 0;
+    int mouseX = 320, mouseY = 240;
 
 							double elapsed_jump;
-time_t level_start_time, current_time,time_j,jump_start_time;
+time_t level_start_time, current_time,time_j;
 //INTILIAZATION ET CREATION DU FENETRE + AFFICHAGE D'IMAGE MENU + Chargement de music 
 
 
@@ -361,7 +371,7 @@ if (manette ==1) {
 
 
     // Open the serial port
-    arduino_fd = open(ARDUINO_SERIAL_PORT, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    arduino_fd = open(ARDUINO_SERIAL_PORT, O_RDWR | O_NOCTTY | O_NDELAY);
     if (arduino_fd == -1) {
         perror("Error opening serial port");
         return -1;
@@ -425,25 +435,50 @@ SDL_Rect poslazer;
 int chose=0; // variable for login/signup
 user Current_User;
 Uint32 Global_startTime = SDL_GetTicks();
-
 while (gameloop) {
+	if ( manette ==1) {
+
+		
+    nbytes = read(arduino_fd, buffer, sizeof(buffer));
+    if (nbytes > 0) {
+        buffer[nbytes] = '\0';
+        sscanf(buffer, "X:%d,Y:%d", &x, &y);
+        ProcessControllerEvent(&event,arduino_fd, gamestate,ecran,&x,&y , buffer, &mouseX,&mouseY);
+    }
+
+		
+
+}
+
 			if (num_j==0) {handleGameMode(&num_j,ecran);}
 				if(chose ==0 && num_j==1 ) {
 						if(game(event,ecran,&Current_User) ==1) {
 								mainmenu=true;
+								gamestate=MAINMENU;
 								chose=1;
+								send_message(arduino_fd, Current_User.username);
+								//send_message(arduino_fd, Current_User.username);
+								//send_message(arduino_fd, "Login Successful");
+								    //usleep(1000000); // Delay for 1 second
+
+								//send_message(arduino_fd, "Welcome");
+								  //  usleep(1000000); // Delay for 1 second
+
+								
+
+
 						}else {
+
 								gameloop=false;
 
 
 						}
+
 				} else if(chose ==0 && num_j==2) {
 						mainmenu=true;
 				}
 
-if ( manette ==1) {
-nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
-}
+
 
 
     				int EntityToShow = rand() % 3 ;
@@ -454,12 +489,29 @@ playS=false;
 gameover=false;
 
 SDL_BlitSurface(imgmenu, NULL, ecran, &posimg);
+/*if (read_joystick(arduino_fd, &x, &y)) {
+            // Debugging message
+ 			mouseX += (x - 512) / 100; // Adjust mapping as needed
+            mouseY += (y - 512) / 100; // Adjust mapping as needed
+
+            // Constrain the cursor within the screen boundaries
+            if (mouseX < 0) mouseX = 0;
+            if (mouseX > 1919) mouseX = 1919;
+            if (mouseY < 0) mouseY = 0;
+            if (mouseY > 1079) mouseY = 1079;
+            	printf("X: %d\nY:%d\n",mouseX,mouseY);
+            // Debugging message
+        }
+        event.motion.x = mouseX;
+        event.motion.y=mouseY;
+                SDL_PushEvent(&event);*/
+
+
+
 if ( num_j==1) {
 //show_high_score(imgmenu);
 } else if (num_j==2) {
-	//Blit_Top_Scores("score_MP", scoresP1, scoresP2);
-	//High_SCORE_MP(ecran, SurfText, scoresP1, 3, 1000, 200); 
-   // High_SCORE_MP(ecran, SurfText, scoresP2, 3, 1000, 400);
+	//
 }
 	
 
@@ -486,6 +538,7 @@ ecran);
 
 //loadtext ("YUMATECH", "CFGlitchCity-Regular.ttf", 50 , 0, 962 , 107 , ecran);
 
+//send_message(arduino_fd, Current_User.username); // past 
 
 
 if ( event.motion.x >=  0 && event.motion.x <= 640 )  {
@@ -498,10 +551,11 @@ if ( event.motion.x >=  0 && event.motion.x <= 640 )  {
 
 
 
-
-blitButton(ecran,&Arrow__menu_btn);		
+	blitButton(ecran,&Arrow__menu_btn);		
 	if(isButtonClicked(&event,&Arrow__menu_btn.pos)){
 				printf("PROFILES MENU\n");
+
+				gamestate=MAINMENU;
 					if(handle_Profile_menu(event,ecran) ==1){
 							printf("PROFILE MENU ACCESSED\n");
 							Profile_Menu( event, ecran);
@@ -512,6 +566,7 @@ blitButton(ecran,&Arrow__menu_btn);
 		}	
 }
 
+	    //write(arduino_fd, Current_User.username, 5);
 
 
 
@@ -521,8 +576,7 @@ blitButton(ecran,&Arrow__menu_btn);
 //ARDUINO MAIN MENU
 if ( manette==1) {
 if ( !playS && !Playing && !optionmenu && !gameover) {
-nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
-if ( nbytes >0) {
+/*if (read_joystick(arduino_fd, &x, &y)){
 	if (strstr(buffer,"pin 3")){
 		mainmenu=false;
 		playS=true;
@@ -541,7 +595,7 @@ if ( nbytes >0) {
 	
 	
 	}
-}
+}*/
 } 
 }
 
@@ -573,6 +627,7 @@ SDL_Flip(ecran);
 				case SDLK_o:
 				mainmenu=false;
 				optionmenu=true;
+
 				break;
 				case SDLK_p:
 				mainmenu=false;
@@ -586,6 +641,8 @@ SDL_Flip(ecran);
 
 			case SDL_MOUSEBUTTONDOWN:
 			if ( mainmenu) {
+								
+
 /*play*/		if ( sourisSurbtn(play,event)&& event.button.button==SDL_BUTTON_LEFT ) {
 					if ( sfClick == false ) {Mix_PlayChannel(-1,click,0); }
 					mainmenu=false;
@@ -629,7 +686,7 @@ SDL_Flip(ecran);
 	
 }
 	else if ( optionmenu ) { 
-						
+
 			if (sourisSurbtn(btn[0].pos,event) && event.button.button==SDL_BUTTON_LEFT  ) { // music on walla off
 
 						MsClick=!MsClick;						
@@ -754,7 +811,7 @@ if (optionmenu==true ){
 		
 
 			if ( playS) {
-				if ( num_j==2 ) {indlvl=1;Playing=true;playS=false;}
+				if ( num_j==2 ) {if(HandleMPAuthentication(ecran,event ) ) {indlvl=1;Playing=true;playS=false; startMPtimer=true;chose_MP =1;}}
 						
 							
 					SDL_BlitSurface(seleclevel,NULL,ecran,&posimg);
@@ -769,23 +826,31 @@ if (optionmenu==true ){
 										Playing=true;
 										playS=false;
 										cut_scene=true;
+																					gamestate=PLAYING;
+
 
 										break;
 									case SDLK_KP2:
 										indlvl=2;
 										Playing=true;
 										playS=false;	
+																				gamestate=PLAYING;
+
 										break;
 									case SDLK_KP3:
 										indlvl=3;
 										Playing=true;
 										playS=false;	
+																				gamestate=PLAYING;
+
 									break;
 									case SDLK_BACKSPACE:
 										
 										mainmenu=true;
 										playS=false;
 										Playing=false;
+																				gamestate=PLAYING;
+
 									break;
 									case SDLK_ESCAPE:
 									quitter=1;
@@ -823,8 +888,7 @@ if (optionmenu==true ){
 						
 	
 							if ( manette==1) {
-							nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
-if ( nbytes >0) {
+							/*if (read_joystick(arduino_fd, &x, &y)){
 
 	if (strstr(buffer,"pin 3")){
 			indlvl=1;
@@ -845,7 +909,7 @@ playS=false;
 	
 	
 	}
-}
+}*/
 }
 
 	
@@ -854,14 +918,16 @@ playS=false;
 
 					}
 						
-						
+						SDL_Flip(ecran);
 					if (Playing) {
 					
 						        time(&level_start_time);
 					Mix_PlayMusic(themelvl1,-1);
+
 						
 				do {
 
+						printf("Mouse X : %d \n Mouse Y : %d\n",x,y);
 			SDL_Rect posEsMnmp;
 		//BLITTAGE
 				if ( gameover== false){
@@ -960,7 +1026,8 @@ playS=false;
 						if ( indlvl==3) {
 								if (final_boss==true) {
 										
-										AnimerFB(&FB,ecran);deplacerFB_AVEC_AI(&FB,player,&Drone);
+										AnimerFB(&FB,ecran);
+										deplacerFB_AVEC_AI(&FB,player,&Drone);
 										render_hacker_health(&FB,ecran,font,1000);
 
 										if( FB.weapon) {
@@ -977,9 +1044,10 @@ playS=false;
 											//Drop_Laser(&Lazer_drone, &Drone, 2000);
 
 										}
-										if ( FB.pos.x < 1800 && player.shoot) {
+										if ( FB.pos.x < 1800  && player.shoot ) {
 
-										handle_FB_health(&FB, poslazer);
+										//handle_FB_health(&FB, poslazer);
+											FB.health--;
 										
 								}
 									if(checkCollision(player.posinit,Lazer_drone.pos)) {
@@ -998,6 +1066,8 @@ playS=false;
 											        handleGameWin(ecran,&mainmenu,musicmenu);
 											        FB.health=500;
 											        Playing=false;
+											        final_boss=false;
+											        benig=false;
 									}
 
 
@@ -1011,10 +1081,14 @@ playS=false;
 				}
 				}else  if (num_j ==2){ // si il ya 2 joueur // MULTIPLAYER
 						printf("ok\n");
-						        Uint32 currentTime_P1 = SDL_GetTicks();
+						        
 						        						printf("ok\n");
+						        						if(startMPtimer==true && chose_MP==1) {
+						        									currentTime_P1 = SDL_GetTicks();
+						        						}
 
 						    	Uint32 currentTime_P2 = SDL_GetTicks();
+						    	player.num_hearts=3;
 						    	printf("TIME %d ", currentTime_P1/1000);
 			 	SDL_BlitSurface(bg1.image, NULL, ecran, &PLAYER1_ZONE);
 			 							printf("ok\n");
@@ -1054,7 +1128,71 @@ playS=false;
         	
 				}
 				SDL_Flip(ecran);
+				if(manette) {
+				read_joystick(arduino_fd, &x,&y,&command);
+				if (x > 600) {
+					right=false;
+					left=true;
+        }
+        if (x < 110) {
+        	left=false;
+        	right=true;
+        }
+        	if(command == SHOOT) {	
+        		player.shoot=true;
+        	}
+        	if(command==SLIDE) {
+        	
+        			event.type=SDL_KEYDOWN;
+        			event.key.keysym.sym=SDLK_c;
+        			slideStartTime = SDL_GetTicks();
+        			SDL_PushEvent(&event);
+        			sliding=true;
+
+        	} 
+
+					if (sliding && SDL_GetTicks() - jumpStartTime >= SLIDE_DURATION) {
+        					event.type=SDL_KEYUP;
+        			event.key.keysym.sym=SDLK_c;
+        			SDL_PushEvent(&event);
+        			bgscrolling=7;
+						player.posinit.y=ground;
+						sliding=false;
+        				}
+
+			if(command==JUMP) {
+        			right=false;
+        			event.type=SDL_KEYDOWN;
+        			event.key.keysym.sym=SDLK_SPACE;
+        			jumpStartTime = SDL_GetTicks();
+        			SDL_PushEvent(&event);
+        			jumping=true;
+
+        	} 
+
+					if (jumping && SDL_GetTicks() - jumpStartTime >= JUMP_DURATION) {
+        					event.type=SDL_KEYUP;
+        			event.key.keysym.sym=SDLK_SPACE;
+        			SDL_PushEvent(&event);
+        			//bgscrolling=7;
+						player.posinit.y=ground;
+						jumping=false;
+        				}
+
+
+        	
+
+					
+
+        	if(command == JUMP) {
+        		jump=true;
+        	}
+        	printf("COMMAND %d\n",command);
+       }
 	while(SDL_PollEvent(&event)) {
+	
+		 
+
 	if ( num_j==1 && !cut_scene) {
 		switch(event.type){
 			case SDL_KEYDOWN:
@@ -1219,7 +1357,7 @@ playS=false;
                     	p2.direction=2;
                     	p2r=true;
                     break;
-                    	
+                    
 
                 }
             } else if (event.type == SDL_KEYUP) {
@@ -1271,23 +1409,19 @@ playS=false;
 		
 	 //MANETTE
 	 if ( manette==1) {
-        nbytes = read(arduino_fd, buffer, sizeof(buffer) -1 );
-  					
-        if (nbytes > 0) {
+        /*if (	read_joystick(arduino_fd, &x, &y)){
         	
-        		        
-            buffer[nbytes] = '\0';  // Null-terminate the string
-            printf("Arduino: %s\n", buffer);
+        	
 							
             
 
-							if ( strstr(buffer,"pin 3") ) {
+							if ( x > 600 ) {
 										right=true;
 										left=false;
 										jump=false;
 							} 
 								
-								if (strstr(buffer, "pin 7")) {
+								if (strstr(buffer, "pin2")) {
 								right=false;
 								left=false;
 								if (player.textcourant < 5) {
@@ -1323,19 +1457,24 @@ if (jump_start_time != 0) {
 							
 								
 								
-							if ( strstr(buffer,"pin 13")) {
+							if ( x < 110) {
 								left=true;	
 								right=false;
 								jump=false;
+								//usleep(100);  
+
 
 							}
+							            	printf("X: %d\nY:%d\n",x,y);
+
+							
+							
 							
 							
 							
            
-        }
+        }*/
      
-        usleep(1);  
     //
 }
     
@@ -1352,11 +1491,10 @@ if (jump_start_time != 0) {
 			player.score-=1;
 			deplacerPerso(&player,-1,&currenttext);
 			}
-			if (player.slide==1  && right) {
+			if ((player.slide==1  && right) )	 {
 					Mix_PlayChannel(-1,slideSFX,0);
 					bgscrolling++;
 					right=false;
-
 					player.textcourant=15;	
 					player.posinit.y=500;
 					
@@ -1368,15 +1506,15 @@ if (jump_start_time != 0) {
 	   player.posinit.x= 350 ;   
        scrollingHorizontal(&TabBack[indlvl-1], bgscrolling);			
        	}
-    if( player.slide ==1) {
-    													player.energy--;
+   if( player.slide ==1 || sliding==true) {
+    		player.energy--;									
     													
     }
        	
        	
        	if( player.energy > 100) {player.energy=100;}
        	if ( player.energy < 0 ) {player.energy=0;}
-       	if ( player.energy < 25 && player.slide==1) {player.posinit.y =ground ; player.textcourant =10;player.slide=0; jumpPerso(&player,1);}
+       	if ( player.energy < 25 && player.slide==1) {player.posinit.y =ground ; player.textcourant =10;player.slide=0; jumpPerso(&player,1);bgscrolling=7;}
       	
       	
      if ( player.shoot) {
@@ -1616,7 +1754,7 @@ if (gameover==true) {
 				time(&current_time);
 					                double elapsed_time = difftime(current_time, level_start_time);
 					                	
-					                if (elapsed_time >= 45 && !gameover) {
+					                if (elapsed_time >= 45 && !gameover && !cut_scene) {
 			
 			
 							ttc=true;
@@ -1869,6 +2007,7 @@ if (gameover==true) {
 				//}//FIN PLAY
 			
 			} // FIN gameloop;
+
 			Uint32 Global_endTime = SDL_GetTicks();
 			Uint32 totalPlayTime = getTimeDifference(Global_startTime,Global_endTime);
 			saveGameTime("gameTime.txt",totalPlayTime);
@@ -2004,7 +2143,7 @@ if (gameover==true) {
     Mix_Quit();
     TTF_Quit();
     SDL_Quit();
-    
+
     if ( manette !=0 ) {
      close(arduino_fd);
     }

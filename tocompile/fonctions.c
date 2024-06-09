@@ -656,7 +656,7 @@ void High_SCORE_MP(SDL_Surface *ecran, SDL_Surface *SurfText, int *scores, int n
     postxtEcran.x = start_x;
     postxtEcran.y = start_y;
     txtcolor.r = 255;
-    txtcolor.g = 0;
+    txtcolor.g = 255;
     txtcolor.b = 255;
     font = TTF_OpenFont("FOnt.ttf", 50);
     if (!font) {
@@ -666,19 +666,79 @@ void High_SCORE_MP(SDL_Surface *ecran, SDL_Surface *SurfText, int *scores, int n
 
     for (int i = 0; i < num_scores; i++) {
         char high[20];
-        sprintf(high, "High Score %d: %d", i + 1, scores[i]);
+        sprintf(high, "Score Rank %d: %d", i + 1, scores[i]);
         SurfText = TTF_RenderText_Solid(font, high, txtcolor);
         if (SurfText == NULL) {
             printf("ERROR LOADING TEXT SURFACE FOR HIGH SCORE\n");
             continue;
         }
         SDL_BlitSurface(SurfText, NULL, ecran, &postxtEcran);
-        postxtEcran.y += 50; // Adjust the y position for the next score
+        postxtEcran.y += 250; // Adjust the y position for the next score
         SDL_FreeSurface(SurfText); // Free the surface after blitting
     }
 
     TTF_CloseFont(font);
 }
+
+int FinalCutscene(SDL_Surface *ecran) {
+    SDL_Surface *Tab[3];
+    Tab[0] = IMG_Load("Frame1.png");
+    Tab[1] = IMG_Load("Frame2.png");
+    Tab[2] = IMG_Load("Frame3.png");
+
+    if (!Tab[0] || !Tab[1] || !Tab[2]) {
+        printf("Error loading final cutscene images\n");
+        return -1;
+    }
+
+    SDL_Surface *ThankYou = IMG_Load("thank_you_img.png");
+    if (!ThankYou) {
+        printf("ERROR LOADING THANK YOU\n");
+        for (int i = 0; i < 3; ++i) {
+            if (Tab[i]) SDL_FreeSurface(Tab[i]);
+        }
+        return -1;
+    }
+
+    Uint32 frame_duration = 500; 
+    Uint32 start_time;
+
+    for (int i = 0; i < 10; ++i) {
+        start_time = SDL_GetTicks();
+        SDL_BlitSurface(Tab[i % 2], NULL, ecran, NULL);
+        SDL_Flip(ecran);
+
+        while (SDL_GetTicks() - start_time < frame_duration) {
+            SDL_Delay(10); 
+        }
+    }
+
+    // Display Tab[2] for 1.5 seconds
+    start_time = SDL_GetTicks();
+    SDL_BlitSurface(Tab[2], NULL, ecran, NULL);
+    SDL_Flip(ecran);
+
+    while (SDL_GetTicks() - start_time < 2500) {
+        SDL_Delay(10); // Small delay to prevent busy-waiting
+    }
+
+    SDL_BlitSurface(ThankYou, NULL, ecran, NULL);
+    SDL_Flip(ecran);
+
+    start_time = SDL_GetTicks();
+    while (SDL_GetTicks() - start_time < 2500) {
+        SDL_Delay(10); 
+    }
+
+    // Clean up surfaces
+    for (int i = 0; i < 3; ++i) {
+        if (Tab[i]) SDL_FreeSurface(Tab[i]);
+    }
+    SDL_FreeSurface(ThankYou);
+
+    return 1;
+}
+
 
 
 void handleGameWin(SDL_Surface *ecran, bool *mainmenu, Mix_Music *MenuMusic) {
@@ -690,11 +750,7 @@ void handleGameWin(SDL_Surface *ecran, bool *mainmenu, Mix_Music *MenuMusic) {
         return;
     }
 
-    SDL_Surface *ThankYou = IMG_Load("thank_you_img.png");
-    if (!ThankYou) {
-        printf("ERROR LOADING THANK YOU \n");
-        return;
-    }
+   
 
     Mix_Chunk *WinSFX = Mix_LoadWAV("gameLossSFX.wav");
     if (!WinSFX) {
@@ -714,16 +770,17 @@ void handleGameWin(SDL_Surface *ecran, bool *mainmenu, Mix_Music *MenuMusic) {
     	updateScreenColor(ecran, &fade);
     }
 
-    SDL_BlitSurface(ThankYou, NULL, ecran, NULL);
     SDL_Flip(ecran);
     start_time = SDL_GetTicks();
+     if( FinalCutscene(ecran)!= -1 ) {  
+   	
 
-    while (SDL_GetTicks() - start_time < 4000) {
-    }
     Mix_ResumeMusic();
     Mix_PlayMusic(MenuMusic, -1);
 
     *mainmenu = true;
+}
+
 }
 
 
@@ -795,3 +852,160 @@ void formatTime(Uint32 milliseconds, char* formattedTime) {
 
     snprintf(formattedTime, 256, "%02u:%02u:%02u:%03u", hours, minutes, seconds, milliseconds % 1000);
 }
+
+
+void send_message(int fd, const char *message) {
+    // Calculate the length of the message
+    size_t message_length = strlen(message);
+    
+    // Allocate memory for the modified message
+    char *modified_message = (char *)malloc(message_length * 2 + 3);
+    if (modified_message == NULL) {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+    
+    // Index to track the position in the modified message
+    int index = 0;
+    
+    // Check if the message contains an asterisk at the beginning
+    int has_start_asterisk = (message[0] == '*');
+    // Check if the message contains an asterisk at the end
+    int has_end_asterisk = (message[message_length - 1] == '*');
+    
+    // Add '*' at the beginning of the message if it's not already present
+    if (!has_start_asterisk) {
+        modified_message[index++] = '*';
+    }
+    
+    // Copy the original message content
+    strcpy(modified_message + index, message);
+    index += message_length;
+    
+    // Add '*' at the end of the message if it's not already present
+    if (!has_end_asterisk) {
+        modified_message[index++] = '*';
+    }
+    
+    // Add '\n' at the end of the message
+    modified_message[index++] = '\n';
+    
+    // Write the modified message to the serial port
+    write(fd, modified_message, index);
+    
+    // Free the allocated memory
+    free(modified_message);
+}
+
+int read_joystick(int fd, int *x, int *y, enum ControllerPlayerCommands *command) {
+    char buffer[128];
+    int n = read(fd, buffer, sizeof(buffer));
+    if (n > 0) {
+        buffer[n] = '\0';
+        sscanf(buffer, "X:%d,Y:%d", x, y);
+
+        // Default to no command
+        *command = NONE;
+
+        // Check for specific commands in the buffer
+        if (strstr(buffer,"CLK")) {
+            *command = SHOOT;
+            printf("CLICKED CLK\n");
+        } else {
+        	*command=NONE;
+        }
+
+        if (strstr(buffer, "BD")) {
+        	printf("SLIDING\n");
+            *command = SLIDE;
+        } else {
+        	*command=NOSLIDE;
+        }
+
+
+        if (strstr(buffer, "BL")) {
+            *command = JUMP;
+        } else {
+        		*command=NOJUMP;
+        }
+
+        return 1;
+    }
+    
+    return 0;
+}
+
+
+void draw_square(SDL_Surface* screen, int x, int y) {
+	SDL_Surface * cursor=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/mini_joueur.png");
+
+    SDL_Rect square;
+    square.x = x;
+    square.y = y;
+    square.w = 10; // Width of the square
+    square.h = 10; // Height of the square
+
+    // Fill the square with a color (white)
+	    SDL_BlitSurface(cursor,NULL,screen,&square);
+
+    // Update the screen
+
+	    	SDL_FreeSurface(cursor);
+}
+
+
+
+void ProcessControllerEvent(SDL_Event *event, int arduino_fd, enum State currentState, SDL_Surface *ecran, int *x, int *y, char buffer[128], int *mouseX, int *mouseY) {
+
+    // Update mouseX and mouseY based on joystick input
+    *mouseX += (*x - 512) / 100; // Adjust mapping as needed
+    *mouseY += (*y - 512) / 100; // Adjust mapping as needed
+
+    // Constrain the cursor within the screen boundaries
+    if (*mouseX < 0) *mouseX = 0;
+    if (*mouseX > 1919) *mouseX = 1919;
+    if (*mouseY < 0) *mouseY = 0;
+    if (*mouseY > 1079) *mouseY = 1079;
+
+    switch (currentState) {
+        case PLAYING:
+            // Add logic for the PLAYING state if necessary
+            break;
+        case OPTIONSMENU:
+            // Add logic for the OPTIONSMENU state if necessary
+            break;
+        case PROFILESMENU:
+            // Add logic for the PROFILESMENU state if necessary
+            break;
+        case MAINMENU:
+            {
+                // Create and push a mouse motion event
+                SDL_Event mouseMotionEvent;
+                mouseMotionEvent.type = SDL_MOUSEMOTION;
+                mouseMotionEvent.motion.x = *mouseX;
+                mouseMotionEvent.motion.y = *mouseY;
+                SDL_PushEvent(&mouseMotionEvent);
+
+                // Check for a click event in the buffer
+                if (strstr(buffer, "CLK")) {
+                    SDL_Event mouseClickEvent;
+
+                    // Create and push a mouse button down event
+                    mouseClickEvent.type = SDL_MOUSEBUTTONDOWN;
+                    mouseClickEvent.button.button = SDL_BUTTON_LEFT;
+                    mouseClickEvent.button.x = *mouseX;
+                    mouseClickEvent.button.y = *mouseY;
+                    SDL_PushEvent(&mouseClickEvent);
+
+                    // Create and push a mouse button up event
+                    mouseClickEvent.type = SDL_MOUSEBUTTONUP;
+                    SDL_PushEvent(&mouseClickEvent);
+                }
+                draw_square(ecran, *mouseX, *mouseY);
+            }
+            break;
+    }
+
+    SDL_Flip(ecran);
+}
+

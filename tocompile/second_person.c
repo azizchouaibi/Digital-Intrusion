@@ -10,7 +10,7 @@
 #define  COLLISION_RESET_TIME 3000
 #define MAX_FRAMES    3
 #define MAX_DIRECTIONS 4
-
+#define MAX_CREDENTIAL_LENGTH 128
 void loadPlayerSpriteSheet(Person *p1, const char *filename) {
     SDL_Surface *spriteSheet = IMG_Load(filename);
     if (!spriteSheet) {
@@ -185,4 +185,138 @@ void handleMPGameState (int scoreP1 , int scoreP2 , SDL_Rect PlayerZone_1 , SDL_
 
 }
 
+
+bool verifyUsername(const char *username) {
+    FILE *file = fopen("users.txt", "r");
+    if (!file) {
+        printf("Failed to open users.txt\n");
+        return false;
+    }
+
+    char storedUsername[256], storedPassword[256], storedPfpPath[256];
+    while (fscanf(file, "%s %s %[^\n]", storedUsername, storedPassword, storedPfpPath) == 3) {
+        printf("Checking username: %s\n", storedUsername);
+        if (strcmp(username, storedUsername) == 0) {
+            printf("User found: %s\n", username);
+            fclose(file);
+            return true;
+        }
+    }
+
+    printf("User not found: %s\n", username);
+    fclose(file);
+    return false;
+}
+
+
+
+int HandleMPAuthentication(SDL_Surface *ecran, SDL_Event event) {
+    SDL_Surface *backg = IMG_Load("/home/aziz/Desktop/Digital_Intrusion/mp_login.png");
+
+    if (!backg) {
+        printf("Error loading background image\n");
+        return -1;
+    }
+
+    int running = 1;
+    char Name1[MAX_CREDENTIAL_LENGTH] = "-";
+    char Name2[MAX_CREDENTIAL_LENGTH] = "-";
+    int active_input = 0; // 0 for Name1, 1 for Name2
+    SDL_Color active_color = {255, 255, 0}; // Yellow color for active input
+    SDL_Color error_color = {255, 255, 0};
+    SDL_Rect User1box = {720, 356, 500, 30};
+    SDL_Rect User2box = {720, 543, 500, 30};
+
+    // Initialize SDL_ttf
+    if (TTF_Init() == -1) {
+        fprintf(stderr, "Unable to initialize SDL_ttf: %s\n", TTF_GetError());
+        SDL_FreeSurface(backg);
+        SDL_Quit();
+        return -1;
+    }
+
+    // Load a font
+    TTF_Font *font = TTF_OpenFont("/home/aziz/Desktop/Backup/Digital_Intrusion/arial.ttf", 50);
+    if (!font) {
+        fprintf(stderr, "Unable to open font: %s\n", TTF_GetError());
+        SDL_FreeSurface(backg);
+        TTF_Quit();
+        SDL_Quit();
+        return -1;
+    }
+
+    SDL_Color color = {255, 255, 255}; // White color
+
+    while (running) {
+        SDL_BlitSurface(backg, NULL, ecran, NULL);
+
+        renderText(ecran, "Player 1 Name:", font, active_color, 1220, 400);
+        renderText(ecran, Name1, font, active_input == 0 ? active_color : color, 1220, 500);
+        renderText(ecran, "Player 2 Name:", font, active_color, 268, 400);
+        renderText(ecran, Name2, font, active_input == 1 ? active_color : color, 268, 500);
+
+        SDL_Flip(ecran);
+
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = 0;
+            } else if (event.type == SDL_KEYDOWN) {
+                char *target;
+                if (active_input == 0) {
+                    target = Name1;
+                } else {
+                    target = Name2;
+                }
+
+                int len = strlen(target);
+                if (event.key.keysym.sym == SDLK_BACKSPACE && len > 1) {
+                    target[len - 1] = '\0';
+                } else if (event.key.keysym.sym == SDLK_TAB) {
+                    active_input = (active_input == 0) ? 1 : 0; // Toggle between Name1 and Name2
+                } else if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    running = 0;
+                    return 0;
+                } else if (event.key.keysym.sym == SDLK_RETURN) {
+                    if (strlen(Name1) > 1 && strlen(Name2) > 1) {
+                        char validName1[MAX_CREDENTIAL_LENGTH];
+                        char validName2[MAX_CREDENTIAL_LENGTH];
+                        strcpy(validName1, Name1);
+                        strcpy(validName2, Name2);
+                        for (int i = 0; i < strlen(validName1); i++) {
+                            if (validName1[i] == '-') validName1[i] = '*';
+                        }
+                        for (int i = 0; i < strlen(validName2); i++) {
+                            if (validName2[i] == '-') validName2[i] = '*';
+                        }
+                        if (verifyUsername(validName1) && verifyUsername(validName2)) {
+                            return 1; // Authentication successful
+                        } else {
+                            renderText(ecran, "Names not found", font, error_color, 960, 1000);
+                        }
+                    } else {
+                        renderText(ecran, "Please Provide Names", font, error_color, 960, 1000);
+                    }
+                } else if (len < MAX_CREDENTIAL_LENGTH - 1) {
+                    char key = (char)event.key.keysym.unicode;
+                    if (key >= 32 && key <= 126) { // Printable characters
+                        target[len] = key;
+                        target[len + 1] = '\0';
+                    }
+                }
+            } else if (isMouseHoveringOverButton(&event, &User1box)) {
+                active_input = 0; // Set focus to Name1 input
+            } else if (isMouseHoveringOverButton(&event, &User2box)) {
+                active_input = 1; // Set focus to Name2 input
+            }
+        }
+    }
+
+    // Cleanup
+    SDL_FreeSurface(backg);
+    TTF_CloseFont(font);
+    TTF_Quit();
+    SDL_Quit();
+
+    return 0;
+}
 

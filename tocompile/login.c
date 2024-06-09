@@ -20,6 +20,7 @@ typedef struct {
     int textLength;
     bool isLogin; // true for login, false for signup
 } AppState;
+int currentModeIndex = 0;
 
 bool init_btn(Button * btn,char * chemin1,char * chemin2,int x , int y) {
 
@@ -489,11 +490,7 @@ int handle_pause_menu(SDL_Event event, SDL_Surface * ecran,Person *player ,int l
             blitButton(ecran,&exit,event);
             SDL_Flip(ecran);
             while(SDL_PollEvent(&event)){
-                    if(event.key.keysym.sym == SDLK_ESCAPE){
-                            running=0;
-                            SDL_FreeSurface(backg);
-                            SDL_Quit();
-                    }
+                   
             if(isButtonClicked(&event,&resume.pos)){
                 return 3;
 
@@ -680,9 +677,10 @@ int handle_Profile_menu(SDL_Event event, SDL_Surface * ecran){
 
             }
 
-            if(event.key.keysym.sym == SDLK_ESCAPE){
+            if(event.key.keysym.sym == SDLK_BACKSPACE){
+                                 return 0;
+
                    running=0;
-                 return 0;
             }
 
             }
@@ -820,6 +818,8 @@ freeButton(&N1);freeButton(&N2);freeButton(&N3);
 
 int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
     // Load background
+     int scoresP1[3], scoresP2[3];
+    SDL_Surface * SurfText;
     SDL_Surface* backg = IMG_Load("/home/aziz/Desktop/Digital_Intrusion/3.png");
     if (!backg) {
         printf("Error loading Profiles menu background\n");
@@ -827,7 +827,11 @@ int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
     }
 
     // Initialize button
-  
+    Button switchState;
+   switchState.img[0]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/ts_opt/off.png");
+   switchState.img[1]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/ts_opt/on.png");
+   switchState.pos.x=960;switchState.pos.y=0;
+
    // SDL_Rect posBack = {1308, 0, backg->w, backg->h};        
 
     // Initialize font
@@ -837,20 +841,36 @@ int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
         SDL_FreeSurface(backg);
         return -1;
     }
-
+    TTF_Font *F2=TTF_OpenFont("fonts/OriginTech personal use.ttf",22);
+        if(!F2){
+                printf("ERROR LOADING F2 PROFILE MENU FUNC \n");
+                return -1;
+        }
+        SDL_Color color={255,255,255};
+        SDL_Color active_color ={255,255,0};
     // Load users and their scores
     user users[100];
     int count = 0;
     loadTopUsers(users, &count);
     loadProfilePictures(users, count);
-
+    Blit_Top_Scores("score_MP", scoresP1, scoresP2);
+    
     // Main loop
     int running = 1;
-    while (running) {
-        SDL_BlitSurface(backg, NULL, ecran, NULL);
-       
-       renderTopUsersWithPictures(ecran, font, users, count);
+    while (running) {  
 
+        SDL_BlitSurface(backg, NULL, ecran, NULL);
+        SDL_BlitSurface(switchState.img[currentModeIndex],NULL,ecran,&switchState.pos);
+        renderText(ecran,"Multiplayer",F2,currentModeIndex==0 ? color : active_color , 1060 , 100);
+        renderText(ecran,"Story Mode",F2,currentModeIndex==0 ? color : active_color , 860 , 100);
+
+       if ( currentModeIndex ==0) {
+       renderTopUsersWithPictures(ecran, font, users, count);
+    }
+    else {
+    High_SCORE_MP(ecran, SurfText, scoresP1, 3, 200, 200); 
+    High_SCORE_MP(ecran, SurfText, scoresP2, 3, 1200, 200);
+}
         SDL_Flip(ecran);
 
         while (SDL_PollEvent(&event)) {
@@ -859,6 +879,9 @@ int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
             }
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
                 running = 0;
+            }
+            if(isButtonClicked(&event,&switchState.pos)){
+                    currentModeIndex = 1 - currentModeIndex;
             }
           
         }
@@ -871,18 +894,18 @@ int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
     return 0;
 }
 int handle_SkinSelection(SDL_Event event, SDL_Surface *ecran, Person P1, Person P2) {
-    SDL_Surface* backg = IMG_Load("/home/aziz/Desktop/Digital_Intrusion/3.png");
+    SDL_Surface* backg = IMG_Load("sou.png");
     if (!backg) {
         printf("Error loading Profiles menu background pause menu background\n");
         return -1; // Handle the error appropriately
     }
 
     Button Next, Pred, Select; // Next for P2 and Pred for P1
-    init_btn(&Next, "Skin2/p2_1.png", "Skin2/P2_0.png", 499, 847); // Use appropriate images and positions
+    init_btn(&Next, "Skin2/p2_1.png", "Skin2/P2_0.png", 546, 337); // Use appropriate images and positions
 
-    init_btn(&Pred, "Skin2/p1_1.png", "Skin2/p1_0.png", 337, 847);// Use appropriate images and positions
+    init_btn(&Pred, "Skin2/p1_1.png", "Skin2/p1_0.png", 393, 337);// Use appropriate images and positions
 
-    init_btn(&Select, "Skin2/select_0.png", "Skin2/select_1.png", 293, 200); // Use appropriate images and positions
+    init_btn(&Select, "Skin2/select_0.png", "Skin2/select_1.png", 350, 100); // Use appropriate images and positions
 
     SDL_Surface* Tab[2];
     Tab[0] = IMG_Load("Skin2/aziz_front_view.png");
@@ -900,7 +923,7 @@ int handle_SkinSelection(SDL_Event event, SDL_Surface *ecran, Person P1, Person 
     int ind = 0;
     int i = 0;
     Uint32 lastTime = SDL_GetTicks();
-    SDL_Rect posP = {293, 118, backg->w, backg->h};
+    SDL_Rect posP = {393, 457, backg->w, backg->h};
     SDL_Rect posPreview = {1308, 118,200, 200};
     int running = 1;
 

@@ -494,7 +494,6 @@ void deplacerFB_AVEC_AI(Entity *E , Person P , Entity * Drone) {
 
 
 
-
 	
 	
 	

@@ -1,3 +1,4 @@
 *yosri	*password	35923	2	68	1	0
 *admin	*admin	58578	2	24	3	0
 *aziz	*aziz101	128327	3	24	1	0
+*admin	*admin	1439	3	100	1	0

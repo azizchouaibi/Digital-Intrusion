@@ -42,7 +42,20 @@ typedef	struct
 	int score;
 }user;
 
-
+enum State {
+    PLAYING,
+    OPTIONSMENU,
+    PROFILESMENU,
+    MAINMENU,
+};
+enum ControllerPlayerCommands {
+    SHOOT,
+    JUMP,
+    SLIDE,
+    NOJUMP,
+    NOSLIDE,
+    NONE,
+};
 void dimenstionsBTN(SDL_Rect *btn1,SDL_Rect *btn2,SDL_Rect* btn3,SDL_Rect *btn4, SDL_Surface *btnclick0);
 void loadbtns(SDL_Surface **play0, SDL_Surface **play1 , SDL_Surface **opts0, SDL_Surface **opts1, SDL_Surface **credit0, SDL_Surface **credit1, SDL_Surface **quit0 , SDL_Surface **quit1);
 bool sourisSurbtn(SDL_Rect btn, SDL_Event event);
