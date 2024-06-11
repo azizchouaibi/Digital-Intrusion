@@ -911,22 +911,19 @@ int read_joystick(int fd, int *x, int *y, enum ControllerPlayerCommands *command
         if (strstr(buffer,"CLK")) {
             *command = SHOOT;
             printf("CLICKED CLK\n");
-        } else {
-        	*command=NONE;
-        }
+        } 
 
         if (strstr(buffer, "BD")) {
         	printf("SLIDING\n");
             *command = SLIDE;
-        } else {
-        	*command=NOSLIDE;
-        }
+        } 
 
-
-        if (strstr(buffer, "BL")) {
+        if (strstr(buffer, "BU")) {
             *command = JUMP;
-        } else {
-        		*command=NOJUMP;
+        } 
+
+        if(strstr(buffer,"BR")) {
+        		*command=PAUSEMENU;
         }
 
         return 1;
@@ -958,8 +955,8 @@ void draw_square(SDL_Surface* screen, int x, int y) {
 void ProcessControllerEvent(SDL_Event *event, int arduino_fd, enum State currentState, SDL_Surface *ecran, int *x, int *y, char buffer[128], int *mouseX, int *mouseY) {
 
     // Update mouseX and mouseY based on joystick input
-    *mouseX += (*x - 512) / 100; // Adjust mapping as needed
-    *mouseY += (*y - 512) / 100; // Adjust mapping as needed
+    *mouseX += -(*x - 512) / 50; // Adjust mapping as needed
+    *mouseY += -(*y - 512) / 50; // Adjust mapping as needed
 
     // Constrain the cursor within the screen boundaries
     if (*mouseX < 0) *mouseX = 0;
@@ -967,7 +964,7 @@ void ProcessControllerEvent(SDL_Event *event, int arduino_fd, enum State current
     if (*mouseY < 0) *mouseY = 0;
     if (*mouseY > 1079) *mouseY = 1079;
 
-    switch (currentState) {
+    /*switch (currentState) {
         case PLAYING:
             // Add logic for the PLAYING state if necessary
             break;
@@ -978,7 +975,7 @@ void ProcessControllerEvent(SDL_Event *event, int arduino_fd, enum State current
             // Add logic for the PROFILESMENU state if necessary
             break;
         case MAINMENU:
-            {
+            {*/
                 // Create and push a mouse motion event
                 SDL_Event mouseMotionEvent;
                 mouseMotionEvent.type = SDL_MOUSEMOTION;
@@ -1002,10 +999,11 @@ void ProcessControllerEvent(SDL_Event *event, int arduino_fd, enum State current
                     SDL_PushEvent(&mouseClickEvent);
                 }
                 draw_square(ecran, *mouseX, *mouseY);
-            }
-            break;
-    }
+                SDL_Flip(ecran);
+           // }
+           // break;
+   // }
 
-    SDL_Flip(ecran);
+    
 }
 

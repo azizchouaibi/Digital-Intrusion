@@ -146,16 +146,34 @@ void Deplacer_ET_NON_COLLISION(Person *P, Entity *Dot, SDL_Rect PlayZone, Uint32
     }
 }
 
-int timer(Uint32 Time , TTF_Font * font , SDL_Rect PosVie, SDL_Surface * ecran) {
-        int time_in_s = 122 - (Time / 1000);
-        char CTime[3];
-        SDL_Surface * SurfTime;
-                if ( time_in_s  <= 0) {time_in_s = 0; return 0;}
-        sprintf(CTime,"%d",time_in_s);
-        SDL_Color txtCoul={255,0,255};
-        SurfTime = TTF_RenderText_Solid(font,CTime,txtCoul);
-        SDL_BlitSurface(SurfTime,NULL,ecran,&PosVie);
-        return 1;
+int timer(time_t startTime, int countdown, TTF_Font *font, SDL_Rect PosVie, SDL_Surface *ecran) {
+    // Calculate the remaining time
+    time_t currentTime = time(NULL);
+    int elapsedTime = difftime(currentTime, startTime);
+    int remainingTime = countdown - elapsedTime;
+
+    if (remainingTime <= 0) {
+        remainingTime = 0; // Ensure the remaining time doesn't go below 0
+        return 0;
+    }
+
+    // Convert remaining time to string
+    char CTime[4]; // Adjust size if you expect more than 3 digits
+    sprintf(CTime, "%d", remainingTime);
+
+    // Render the text surface
+    SDL_Color txtCoul = {255, 0, 255};
+    SDL_Surface *SurfTime = TTF_RenderText_Solid(font, CTime, txtCoul);
+    if (SurfTime == NULL) {
+        printf("Error rendering text: %s\n", TTF_GetError());
+        return -1;
+    }
+
+    // Blit the text surface onto the screen
+    SDL_BlitSurface(SurfTime, NULL, ecran, &PosVie);
+    SDL_FreeSurface(SurfTime);
+
+    return 1;
 }
 
 
@@ -291,7 +309,8 @@ int HandleMPAuthentication(SDL_Surface *ecran, SDL_Event event) {
                         if (verifyUsername(validName1) && verifyUsername(validName2)) {
                             return 1; // Authentication successful
                         } else {
-                            renderText(ecran, "Names not found", font, error_color, 960, 1000);
+                            renderText(ecran, "Names not found", font, error_color, 960, 200);
+
                         }
                     } else {
                         renderText(ecran, "Please Provide Names", font, error_color, 960, 1000);
@@ -309,6 +328,8 @@ int HandleMPAuthentication(SDL_Surface *ecran, SDL_Event event) {
                 active_input = 1; // Set focus to Name2 input
             }
         }
+                SDL_Flip(ecran);
+
     }
 
     // Cleanup

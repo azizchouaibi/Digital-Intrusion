@@ -52,7 +52,7 @@ enum ControllerPlayerCommands {
     SHOOT,
     JUMP,
     SLIDE,
-    NOJUMP,
+    PAUSEMENU,
     NOSLIDE,
     NONE,
 };

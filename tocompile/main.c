@@ -12,7 +12,7 @@
 #define DAMAGE_COOLDOWN 2// 2 second
 #define ARDUINO_SERIAL_PORT "/dev/ttyACM0"  // notre port arduino
 #define SLIDE_DURATION 1000 // Duration in milliseconds
-#define JUMP_DURATION 800
+#define JUMP_DURATION 600
 int main(){
 enum State gamestate;
 enum ControllerPlayerCommands command;
@@ -28,7 +28,8 @@ scanf("%d",&manette);
 }while ( manette > 1 || manette < 0 /*|| num_j > 2 || num_j < 0*/ );
    // srand(time(NULL));
 				int collected=0;
-				Uint32 currentTime_P1;
+				Uint32 currentTime_P1=0;
+				Uint32 currentTime_P2=0;
 				bool startMPtimer=false;
 				int chose_MP=0;
 printf("=========STARTED=========\n");
@@ -81,6 +82,8 @@ SDL_Surface *lazer;
 
 							double elapsed_jump;
 time_t level_start_time, current_time,time_j;
+	time_t startTime;
+
 //INTILIAZATION ET CREATION DU FENETRE + AFFICHAGE D'IMAGE MENU + Chargement de music 
 
 
@@ -556,13 +559,23 @@ if ( event.motion.x >=  0 && event.motion.x <= 640 )  {
 				printf("PROFILES MENU\n");
 
 				gamestate=MAINMENU;
-					if(handle_Profile_menu(event,ecran) ==1){
-							printf("PROFILE MENU ACCESSED\n");
-							Profile_Menu( event, ecran);
+					//if(handle_Profile_menu(event,ecran) ==1){
+							//printf("PROFILE MENU ACCESSED\n");
+							/*if(*/
 
-			} else {
-///
+				if(Profile_Menu(event, ecran)==0){
+								mainmenu=true;
 				}
+
+
+
+								/*==0) {
+									mainmenu=true;
+							}
+
+			/*}/* else {
+					mainmenu=true;
+				}*/
 		}	
 }
 
@@ -576,26 +589,7 @@ if ( event.motion.x >=  0 && event.motion.x <= 640 )  {
 //ARDUINO MAIN MENU
 if ( manette==1) {
 if ( !playS && !Playing && !optionmenu && !gameover) {
-/*if (read_joystick(arduino_fd, &x, &y)){
-	if (strstr(buffer,"pin 3")){
-		mainmenu=false;
-		playS=true;
-		
 
-	}
-	if (strstr(buffer,"pin 7")){
-		gameloop=false;
-		
-	
-	}
-	
-	if (strstr(buffer,"pin 13" )){
-			mainmenu=false;
-			optionmenu=true;
-	
-	
-	}
-}*/
 } 
 }
 
@@ -811,8 +805,34 @@ if (optionmenu==true ){
 		
 
 			if ( playS) {
-				if ( num_j==2 ) {if(HandleMPAuthentication(ecran,event ) ) {indlvl=1;Playing=true;playS=false; startMPtimer=true;chose_MP =1;}}
-						
+				if(manette==1) {
+					nbytes = read(arduino_fd, buffer, sizeof(buffer));
+    if (nbytes > 0) {
+        buffer[nbytes] = '\0';
+	       if(strstr(buffer,"BL")) {
+	       		indlvl=1;
+	       		Playing=true;
+				playS=false;
+				cut_scene=true;
+				gamestate=PLAYING;
+
+	       } else if(strstr(buffer,"BU")) {
+	       	indlvl=2;
+	       	Playing=true;
+			playS=false;
+			gamestate=PLAYING;
+	       } else if(strstr(buffer,"BR")) {
+	       	indlvl=3;
+	       	Playing=true;
+			playS=false;
+			gamestate=PLAYING;
+	       }
+
+    }
+				}
+				if ( num_j==2 ) {{if(HandleMPAuthentication(ecran,event )) {indlvl=1;Playing=true;playS=false; startMPtimer=true;chose_MP =1;
+				startTime = time(NULL);}}}
+
 							
 					SDL_BlitSurface(seleclevel,NULL,ecran,&posimg);
 					 blitButton(ecran,&change_outfit,event);
@@ -996,7 +1016,7 @@ playS=false;
 
 				afficherES(ecran,heart_collect);	
 				afficherPerso(&player, ecran);
-
+			
 				if ( indlvl==2) {
 					if (Flash_collect.active) {
 							Flash_collect.pos.x-=3;
@@ -1024,7 +1044,10 @@ playS=false;
 								SDL_BlitSurface(lazer,NULL,ecran,&poslazer);
 						}
 						if ( indlvl==3) {
+								printf("FB X : %d\n FB Y : %d\n",FB.pos.x,FB.pos.y);
+								printf("Player Shoot : %d\n" , player.shoot);
 								if (final_boss==true) {
+
 										
 										AnimerFB(&FB,ecran);
 										deplacerFB_AVEC_AI(&FB,player,&Drone);
@@ -1079,15 +1102,16 @@ playS=false;
 					if (final_boss == false) {afficherES(ecran,TabEnt[EntityToShow]);}
 					afficherminimap(TabMap[indlvl-1], ecran);
 				}
-				}else  if (num_j ==2){ // si il ya 2 joueur // MULTIPLAYER
+				}else  if (num_j ==2 && chose_MP){ // si il ya 2 joueur // MULTIPLAYER
 						printf("ok\n");
-						        
+						        	printf("start mp timer %d\n",startMPtimer);
 						        						printf("ok\n");
-						        						if(startMPtimer==true && chose_MP==1) {
-						        									currentTime_P1 = SDL_GetTicks();
-						        						}
+						        		if(startMPtimer==true && chose_MP==1) {
+						        							        	printf("start mp timer %d\n",startMPtimer);
 
-						    	Uint32 currentTime_P2 = SDL_GetTicks();
+						        								currentTime_P1 = SDL_GetTicks();
+						        								currentTime_P2=SDL_GetTicks();
+
 						    	player.num_hearts=3;
 						    	printf("TIME %d ", currentTime_P1/1000);
 			 	SDL_BlitSurface(bg1.image, NULL, ecran, &PLAYER1_ZONE);
@@ -1114,13 +1138,16 @@ playS=false;
       SDL_BlitSurface(SurfText_P2,NULL,ecran,&PosScoreP2);
       renderPlayerFrame(&p1,ecran);
       renderPlayerFrame(&p2,ecran);
-
-      if ( timer(currentTime_P1 ,font, PosVie_P1,ecran) == 0) {handleMPGameState (p1.score , p2.score ,PLAYER1_ZONE,PLAYER2_ZONE ,  ecran,&mainmenu,&Playing);}
+      // int remainingTime = timer(startTime, 120, font, PosVie_P1, ecran);
+      if ( timer(startTime, 62, font, PosVie_P1, ecran) == 0) {handleMPGameState (p1.score , p2.score ,PLAYER1_ZONE,PLAYER2_ZONE ,  ecran,&mainmenu,&Playing);currentTime_P1=0;startMPtimer=false;}
 
         SDL_Flip(ecran); // Update screen
         SDL_Delay(60); // Adjust frame rate								
 
-				
+				} else {
+					currentTime_P1=0;
+					printf("TIME %d ", currentTime_P1/1000);
+				}
 				}
 				
 				
@@ -1142,7 +1169,7 @@ playS=false;
         		player.shoot=true;
         	}
         	if(command==SLIDE) {
-        	
+        			right=false;
         			event.type=SDL_KEYDOWN;
         			event.key.keysym.sym=SDLK_c;
         			slideStartTime = SDL_GetTicks();
@@ -1151,7 +1178,7 @@ playS=false;
 
         	} 
 
-					if (sliding && SDL_GetTicks() - jumpStartTime >= SLIDE_DURATION) {
+					if (sliding && SDL_GetTicks() - slideStartTime >= SLIDE_DURATION) {
         					event.type=SDL_KEYUP;
         			event.key.keysym.sym=SDLK_c;
         			SDL_PushEvent(&event);
@@ -1179,15 +1206,20 @@ playS=false;
 						jumping=false;
         				}
 
+        				/*if(command==PAUSEMENU) {
+        					event.type=SDL_KEYDOWN;
+        			event.key.keysym.sym=SDLK_ESCAPE;
+        			SDL_PushEvent(&event);
+        			command=NONE;
+        				
+        				}*/
+
 
         	
 
 					
 
-        	if(command == JUMP) {
-        		jump=true;
-        	}
-        	printf("COMMAND %d\n",command);
+        	
        }
 	while(SDL_PollEvent(&event)) {
 	
@@ -1610,7 +1642,10 @@ if (jump_start_time != 0) {
             		
             
             
-        }if ( Collided(spider.pos,player.posinit) == 1  && player.slide==0){	
+        }
+
+
+if(indlvl==2){ if ( Collided(spider.pos,player.posinit) == 1  && player.slide==0){	
 
 												spider.dx=15;
 												player.textcourant=14;
@@ -1635,8 +1670,12 @@ if (jump_start_time != 0) {
 														}}
 
 
+													}
+
+       
+
 																				
-			
+
 	
    /* if ((Drone.pos.x - 250) - player.posinit.x < 250 && (Drone.pos.x - 250) - player.posinit.x > 270 ) {
     	Drone.dx=-10;
@@ -1655,6 +1694,11 @@ if (jump_start_time != 0) {
     			FB.dx-=10;
 
     	}
+
+    	if(FB.pos.x > 2500) {
+    			FB.dx+=10;
+    	}
+
 
 		if ( Drone.pos.x <= 50) {
 				Drone.dx =5;
@@ -1688,10 +1732,54 @@ if (jump_start_time != 0) {
 		
 		
 if (gameover==true) {
+
+
 							if ( sfClick == false  && lst ) {Mix_PlayChannel(-1,gameOverSFX,0); lst = false;}
 				Mix_HaltMusic();
 				SDL_BlitSurface(Gameover,NULL,ecran,&pas);
-										poses.x=1600;
+				TabEnt[EntityToShow].pos.x=1800;
+				if(manette) {
+								nbytes = read(arduino_fd, buffer, sizeof(buffer));
+    if (nbytes > 0) {
+        buffer[nbytes] = '\0';
+	       if(strstr(buffer,"BL")) {
+	       		lst=true;
+						Mix_ResumeMusic();		
+						Mix_PlayMusic(themelvl1,-1);
+						TabEnt[EntityToShow].pos.x = 1600;
+						//poses.x=1800;
+						player.posinit.x = 100;
+						player.num_hearts=3;
+
+						player.score=0;
+						lvl1=true;
+						gameover=false;
+						indlvl=1;
+
+	       }  else if(strstr(buffer,"BR")) {
+	     Playing=false;
+						playS=false;
+						gameover=false;
+						mainmenu=true;
+						cut_scene=true;
+						player.score=0;
+						benig=false;
+
+
+
+						player.num_hearts=3;
+						player.energy=100;
+
+						Mix_PlayMusic(musicmenu,-1);
+	       }
+
+    }
+
+
+
+
+
+				}
 					switch(event.type){
 					case SDL_KEYDOWN:
 					switch(event.key.keysym.sym) {
@@ -1699,8 +1787,8 @@ if (gameover==true) {
 						lst=true;
 						Mix_ResumeMusic();		
 						Mix_PlayMusic(themelvl1,-1);
-
-						poses.x=1600;
+						TabEnt[EntityToShow].pos.x = 1600;
+						//poses.x=1800;
 						player.posinit.x = 100;
 						player.num_hearts=3;
 
@@ -1714,37 +1802,21 @@ if (gameover==true) {
 						playS=false;
 						gameover=false;
 						mainmenu=true;
-						
+						cut_scene=true;
+						player.score=0;
+						benig=false;
+
+
+
+						player.num_hearts=3;
+						player.energy=100;
+
 						Mix_PlayMusic(musicmenu,-1);
 					break;
 					}
 				break;
 		}
-		/*if (strstr(buffer,"pin 3")){
-			Playing=false;
-						playS=false;
-						gameover=false;
-						mainmenu=true;
-
-						Mix_PlayMusic(musicmenu,-1);
-	}
-	
-	
-	if (strstr(buffer,"pin 13" )){
-			lst=true;
-						Mix_ResumeMusic();		
-						Mix_PlayMusic(themelvl1,-1);
-
-						poses.x=1600;
-						player.posinit.x = 100;
-						player.num_hearts=3;
-
-						score=0;
-						lvl1=true;
-						gameover=false;
-	
-	
-	}*/
+		
 		
 }
 
@@ -1754,7 +1826,7 @@ if (gameover==true) {
 				time(&current_time);
 					                double elapsed_time = difftime(current_time, level_start_time);
 					                	
-					                if (elapsed_time >= 45 && !gameover && !cut_scene) {
+					                if (elapsed_time >= 30 && !gameover && !cut_scene) {
 			
 			
 							ttc=true;
@@ -1899,11 +1971,28 @@ if (gameover==true) {
 				
 /****ANNIMATION*****/
 		annimer_back(&back);
+			if(t.j==1)
+		{
+			joueur2(t.tab);
+			t.j=0;
+			z.j=atilganger(t.tab);
+			printf("%d\n" , z.j);
+			for(int i=0;i<3;i++)
+			{
+				for(int j=0 ; j<3;j++)
+				{
+					printf("%d\t" , t.tab[i][j]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+		}
 							
 					}while(ttc);
 					
 						if ( tcc_won) {
 					Playing=false;
+					ttc=false;
 										Pass_to_Next_Level(Loading, ecran, &nxtlvlSFX,&player,TabBack , indlvl);
 										playS=true;
 					

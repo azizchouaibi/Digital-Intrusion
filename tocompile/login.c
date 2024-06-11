@@ -655,36 +655,39 @@ int handle_Profile_menu(SDL_Event event, SDL_Surface * ecran){
             }
 
 
-
+        SDL_Rect postst={0,0,1308,1080};
         init_btn(&pf,"for ts/pfp_btn_0.png","for ts/pfp_btn_1.png",1546,43);
         SDL_Rect posBack={1308,0,backg->w,backg->h};        
         int running=1;
-        while(running){
+        //while(running){
 
             SDL_BlitSurface(backg,NULL,ecran,&posBack);
             blitButton(ecran,&pf,event);
             show_high_score(ecran);
             SDL_Flip(ecran);
             while(SDL_PollEvent(&event)){
-                    if(event.type == SDL_QUIT){
-                            running=0;
-                            SDL_FreeSurface(backg);
-                            SDL_Quit();
-                    }
+                  
             if(isButtonClicked(&event,&pf.pos)){
-              running=0;
+             
                 return 1;
+                 running=0;
 
             }
 
+            if(isButtonClicked(&event,&postst)){
+             
+                return 0;
+                 running=0;
+
+            }
             if(event.key.keysym.sym == SDLK_BACKSPACE){
-                                 return 0;
+                    return 0;
 
                    running=0;
             }
 
             }
-        }
+       // }
 freeButton(&pf);
 SDL_FreeSurface(backg);
 }
@@ -825,7 +828,7 @@ int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
         printf("Error loading Profiles menu background\n");
         return -1;
     }
-
+    int running=0;
     // Initialize button
     Button switchState;
    switchState.img[0]=IMG_Load("/home/aziz/Desktop/Digital_Intrusion/ts_opt/off.png");
@@ -856,7 +859,13 @@ int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
     Blit_Top_Scores("score_MP", scoresP1, scoresP2);
     
     // Main loop
-    int running = 1;
+   
+    if(handle_Profile_menu(event, ecran)==1){
+        running=1;
+    } else {
+        return 0;
+    }
+
     while (running) {  
 
         SDL_BlitSurface(backg, NULL, ecran, NULL);
@@ -877,7 +886,7 @@ int Profile_Menu(SDL_Event event, SDL_Surface *ecran) {
             if (event.type == SDL_QUIT) {
                 running = 0;
             }
-            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+            if ( event.key.keysym.sym == SDLK_BACKSPACE) {
                 running = 0;
             }
             if(isButtonClicked(&event,&switchState.pos)){
