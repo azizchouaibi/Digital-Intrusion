@@ -963,7 +963,7 @@ void ProcessControllerEvent(SDL_Event *event, int arduino_fd, enum State current
     if (*mouseX > 1919) *mouseX = 1919;
     if (*mouseY < 0) *mouseY = 0;
     if (*mouseY > 1079) *mouseY = 1079;
-
+    bool isBackClicked = false;
     /*switch (currentState) {
         case PLAYING:
             // Add logic for the PLAYING state if necessary
@@ -998,6 +998,22 @@ void ProcessControllerEvent(SDL_Event *event, int arduino_fd, enum State current
                     mouseClickEvent.type = SDL_MOUSEBUTTONUP;
                     SDL_PushEvent(&mouseClickEvent);
                 }
+             /* if (strstr(buffer, "BL") && isBackClicked==false) {
+             isBackClicked=true;
+    SDL_Event backspaceEvent;
+
+    // Create and push SDL_KEYDOWN event for backspace
+    backspaceEvent.type = SDL_KEYDOWN;
+    backspaceEvent.key.keysym.sym = SDLK_BACKSPACE;
+
+    SDL_PushEvent(&backspaceEvent);
+  //  SDL_Delay(50);
+    // Create and push SDL_KEYUP event for backspace
+    backspaceEvent.type = SDL_KEYUP;
+    //backspaceEvent.key.keysym.sym = SDLK_BACKSPACE;
+    SDL_PushEvent(&backspaceEvent);
+
+}*/
                 draw_square(ecran, *mouseX, *mouseY);
                 SDL_Flip(ecran);
            // }

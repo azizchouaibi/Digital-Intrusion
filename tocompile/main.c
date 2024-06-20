@@ -1754,7 +1754,7 @@ if (gameover==true) {
 						player.score=0;
 						lvl1=true;
 						gameover=false;
-						indlvl=1;
+						//indlvl=1;
 
 	       }  else if(strstr(buffer,"BR")) {
 	     Playing=false;
@@ -1795,7 +1795,7 @@ if (gameover==true) {
 						player.score=0;
 						lvl1=true;
 						gameover=false;
-						indlvl=1;
+						//indlvl=1;
 					break;						
 					case SDLK_n:		
 						Playing=false;
@@ -2035,10 +2035,10 @@ if (gameover==true) {
 				if ( indlvl==3 ) {
 				time(&current_time);
 					                double elapsed_time = difftime(current_time, level_start_time);
-					                if (elapsed_time >= 3 && elapsed_time <= 10 && benig==false) {
+					                if (elapsed_time >= 7 && elapsed_time <= 12 && benig==false) {
 					                benig=true;
 					                
-					                }
+					                }	
 
 					               if ( benig){
     									resultat_fichier = quiz1(&en,ecran);
