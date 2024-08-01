@@ -11,6 +11,5 @@ Digital Intrusion also includes:
 
 Additionally, we developed an Arduino controller to enhance the gaming experience and to showcase our ability to integrate hardware and software.
 
-Check out our teaser on ESPRIT's channel : 
-https://www.youtube.com/watch?v=bSg_VnVUbyg
+
 
